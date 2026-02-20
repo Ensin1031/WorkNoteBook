@@ -235,7 +235,6 @@
         android:id="@+id/btn_create_note"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:visibility="gone"
         android:background="@drawable/bg_rectangle_button"
         android:contentDescription="@string/CreateNote"
         android:layout_margin="20dp"
