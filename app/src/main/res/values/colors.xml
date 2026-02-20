@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="redColor">#F44336</color>
+    <color name="yellowColor">#FFC107</color>
+    <color name="greenColor">#4CAF50</color>
+    <color name="lightLightGray">#EEEEEE</color>
+    <color name="lightLightGrayBack">#E5E5E5</color>
+    <color name="textColor">#222222</color>
+    <color name="textLight">#878787</color>
+    <color name="disabledBTNColor">#808080</color>
+    <color name="grayBackColor">#B0B0B0</color>
+    <color name="lightBTNColor">#6750A4</color>
+    <color name="primaryBTNColor">#673AB7</color>
+    <color name="primaryBTNColorClick">#4A148C</color>
+</resources>
