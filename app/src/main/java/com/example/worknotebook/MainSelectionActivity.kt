@@ -46,7 +46,7 @@ class MainSelectionActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_settings -> {
-                    loadFragment(MeetingsFragment.newInstance())
+                    loadFragment(UserSettingsFragment.newInstance())
                     true
                 }
                 else -> false

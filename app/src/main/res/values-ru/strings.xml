@@ -5,6 +5,7 @@
     <string name="AddLoginOrEmail">Введите логин или email</string>
     <string name="AddEmail">Введите email</string>
     <string name="AddPass">Введите пароль</string>
+    <string name="NotValidLoginOrPassword">Неверный логин или пароль</string>
     <string name="Registration">Регистрация</string>
     <string name="AddLogin">Введите логин</string>
     <string name="Login">Войти</string>
@@ -12,14 +13,21 @@
     <string name="OnRegistration">Зарегистрироваться</string>
     <string name="AddName">Введите ФИО</string>
     <string name="IncorrectEmail">Некорректный Email</string>
+    <string name="NotRegistrationUserExisting">Пользователь с таким логином или email уже зарегистрирован</string>
     <string name="RegistrationSuccessful">Регистрация успешна</string>
     <string name="RegistrationError">Ошибка регистрации</string>
     <string name="Error">Ошибка</string>
     <string name="LoginSuccessful">Успешный вход</string>
+    <string name="LoginLocal">Войти локально</string>
+    <string name="LoginUserNotFound">Неверный логин или пароль</string>
+    <string name="LoginErrorQuestion">Ошибка авторизации. Войти локально, для работы без доступа к интернету?</string>
+    <string name="LoginErrorLocalQuestion">Ошибка подключения к серверу. Войти локально, для работы без доступа к интернету?</string>
+    <string name="LoginLocalSuccessful">Доступна только локальная авторизация. Успешный вход.</string>
     <string name="edit_profile">Редактировать профиль</string>
     <string name="user_id">ID пользователя</string>
     <string name="user_login">Логин</string>
     <string name="user_email">Email</string>
+    <string name="user_pass">Пароль</string>
     <string name="user_is_verified">Верифицирован</string>
     <string name="user_is_admin">Администратор</string>
     <string name="user_name">ФИО</string>
@@ -36,6 +44,7 @@
     <string name="CreateNote">Создать заметку</string>
     <string name="CreateMeeting">Создать встречу</string>
     <string name="Profile">Профиль</string>
+    <string name="Settings">Настройки</string>
     <string name="checking_connection">Проверка соединения с сервером…</string>
     <string name="connection_error">Не удалось подключиться к серверу.\nПроверьте интернет и повторите попытку.</string>
     <string name="retry">Повторить</string>
@@ -50,10 +59,12 @@
     <string name="rowCreatedInfo">Создана:</string>
     <string name="edit">Редактировать</string>
     <string name="cancel">Отменить</string>
+    <string name="Cancel">Отмена</string>
     <string name="menu">Меню</string>
     <string name="set_priority">Установить приоритет</string>
     <string name="select_priority">Выберите приоритет</string>
     <string name="high_priority">Высокий</string>
     <string name="normal_priority">Нормальный</string>
     <string name="low_priority">Низкий</string>
+    <string name="errorConnectRegistrationCheck">Сервер недоступен. Войдите в аккаунт для продолжения работы без доступа к серверу.</string>
 </resources>
