@@ -24,20 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/lightLightGray"
-            android:gravity="center_vertical"
             android:orientation="vertical"
             android:padding="20dp">
-
-<!--            <TextView-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_gravity="center"-->
-<!--                android:layout_marginVertical="10dp"-->
-<!--                android:fontFamily="@font/inter_bold"-->
-<!--                android:text="@string/UserSettings"-->
-<!--                android:textColor="@color/textColor"-->
-<!--                android:textSize="25sp"-->
-<!--                android:textStyle="bold" />-->
 
             <TableLayout
                 android:id="@+id/table_user_info"
@@ -47,36 +35,36 @@
                 android:padding="10dp"
                 android:stretchColumns="1">
 
-                <!-- ID пользователя -->
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="8dp">
+<!--                &lt;!&ndash; ID пользователя &ndash;&gt;-->
+<!--                <TableRow-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:padding="8dp">-->
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="120dp"
-                        android:padding="4dp"
-                        android:text="@string/user_id"
-                        android:textColor="@color/textColor"
-                        android:textSize="16sp" />
+<!--                    <TextView-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:minWidth="120dp"-->
+<!--                        android:padding="4dp"-->
+<!--                        android:text="@string/user_id"-->
+<!--                        android:textColor="@color/textColor"-->
+<!--                        android:textSize="16sp" />-->
 
-                    <EditText
-                        android:id="@+id/ett_user_settings_id"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:autofillHints=""
-                        android:background="@color/lightLightGrayBack"
-                        android:ems="10"
-                        android:fontFamily="@font/inter"
-                        android:hint="@string/user_id"
-                        android:inputType="text"
-                        android:padding="7dp"
-                        android:text="@string/user_id"
-                        android:textColor="@color/textColor"
-                        android:textSize="16sp" />
-                </TableRow>
+<!--                    <EditText-->
+<!--                        android:id="@+id/ett_user_settings_id"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="50dp"-->
+<!--                        android:autofillHints=""-->
+<!--                        android:background="@color/lightLightGrayBack"-->
+<!--                        android:ems="10"-->
+<!--                        android:fontFamily="@font/inter"-->
+<!--                        android:hint="@string/user_id"-->
+<!--                        android:inputType="text"-->
+<!--                        android:padding="7dp"-->
+<!--                        android:text="@string/user_id"-->
+<!--                        android:textColor="@color/textColor"-->
+<!--                        android:textSize="16sp" />-->
+<!--                </TableRow>-->
 
                 <!-- ФИО -->
                 <TableRow
@@ -202,38 +190,7 @@
                         android:textSize="16sp" />
                 </TableRow>
 
-                <!-- Статус авторизации на бэке -->
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="120dp"
-                        android:padding="4dp"
-                        android:text="@string/user_email"
-                        android:textColor="@color/textColor"
-                        android:textSize="16sp" />
-
-                    <EditText
-                        android:id="@+id/ett_user_settings_is_logged"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:autofillHints=""
-                        android:background="@color/lightLightGrayBack"
-                        android:ems="10"
-                        android:fontFamily="@font/inter"
-                        android:hint="@string/user_email"
-                        android:inputType="textEmailAddress"
-                        android:padding="7dp"
-                        android:text="@string/user_email"
-                        android:textColor="@color/textColor"
-                        android:textSize="16sp" />
-                </TableRow>
-
-<!--                &lt;!&ndash; Статус верификации &ndash;&gt;-->
+<!--                &lt;!&ndash; Статус авторизации на бэке &ndash;&gt;-->
 <!--                <TableRow-->
 <!--                    android:layout_width="match_parent"-->
 <!--                    android:layout_height="wrap_content"-->
@@ -242,63 +199,26 @@
 <!--                    <TextView-->
 <!--                        android:layout_width="wrap_content"-->
 <!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_gravity="center"-->
 <!--                        android:minWidth="120dp"-->
 <!--                        android:padding="4dp"-->
-<!--                        android:text="@string/user_is_verified"-->
+<!--                        android:text="@string/user_email"-->
 <!--                        android:textColor="@color/textColor"-->
 <!--                        android:textSize="16sp" />-->
 
-<!--                    <LinearLayout-->
+<!--                    <EditText-->
+<!--                        android:id="@+id/ett_user_settings_is_logged"-->
 <!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:background="@color/lightLightGrayBack">-->
-
-<!--                        <CheckBox-->
-<!--                            android:id="@+id/chb_user_settings_verified"-->
-<!--                            android:layout_width="50dp"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:layout_gravity="left"-->
-<!--                            android:checked="false"-->
-<!--                            android:clickable="false"-->
-<!--                            android:text=""-->
-<!--                            tools:ignore="RtlHardcoded" />-->
-<!--                    </LinearLayout>-->
-
-<!--                </TableRow>-->
-
-<!--                &lt;!&ndash; Роль администратора &ndash;&gt;-->
-<!--                <TableRow-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:padding="8dp">-->
-
-<!--                    <TextView-->
-<!--                        android:layout_width="wrap_content"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_gravity="center"-->
-<!--                        android:minWidth="120dp"-->
-<!--                        android:padding="4dp"-->
-<!--                        android:text="@string/user_is_admin"-->
+<!--                        android:layout_height="50dp"-->
+<!--                        android:autofillHints=""-->
+<!--                        android:background="@color/lightLightGrayBack"-->
+<!--                        android:ems="10"-->
+<!--                        android:fontFamily="@font/inter"-->
+<!--                        android:hint="@string/user_email"-->
+<!--                        android:inputType="textEmailAddress"-->
+<!--                        android:padding="7dp"-->
+<!--                        android:text="@string/user_email"-->
 <!--                        android:textColor="@color/textColor"-->
 <!--                        android:textSize="16sp" />-->
-
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:background="@color/lightLightGrayBack">-->
-
-<!--                        <CheckBox-->
-<!--                            android:id="@+id/chb_user_settings_admin"-->
-<!--                            android:layout_width="wrap_content"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:layout_gravity="left"-->
-<!--                            android:checked="false"-->
-<!--                            android:clickable="false"-->
-<!--                            android:text=""-->
-<!--                            tools:ignore="RtlHardcoded" />-->
-<!--                    </LinearLayout>-->
-
 <!--                </TableRow>-->
 
             </TableLayout>

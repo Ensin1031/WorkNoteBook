@@ -54,7 +54,7 @@ interface ApiService {
     @PATCH("${ApiRoutes.USERS}{user_id}/")
     suspend fun updateUser(
         @Path("user_id") userId: Int,
-        @Body request: UserCreateOrUpdate
+        @Body request: UserUpdate
     ): Response<User>
 
     // NOTES

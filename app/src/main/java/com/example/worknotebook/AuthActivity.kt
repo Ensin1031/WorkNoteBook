@@ -195,16 +195,22 @@ class AuthActivity : AppCompatActivity() {
                         val accessToken = response.body()?.accessToken
                         val userAuthData = response.body()?.user
 
-                        if (accessToken != null && userAuthData?.id != null) {
-                            val user = session.getMergedUser(UserCreateOrUpdate(
-                                externalId = userAuthData.id,
+                        if (accessToken != null && userAuthData?.externalId != null) {
+                            val user = session.getMergedUser(UserCreate(
+                                externalId = userAuthData.externalId,
                                 name = userAuthData.name,
                                 login = userAuthData.login,
                                 email = userAuthData.email,
-                                password = userData.password
+                                password = userData.password,
+                                verified = userAuthData.verified,
+                                isAdmin = userAuthData.isAdmin,
+                                createdAt = userAuthData.createdAt,
+                                updatedAt = userAuthData.updatedAt,
+                                birthdateAt = userAuthData.birthdateAt,
+                                gender = userAuthData.gender
                             ))
                             if (user != null) {
-                                login(user = user, token = accessToken)
+                                login(user = user, token = accessToken, resources.getString(R.string.LoginSuccessful))
                             } else {
                                 goToLocalAuth()
                             }
@@ -239,7 +245,7 @@ class AuthActivity : AppCompatActivity() {
             // если hasConnection = false - только локальная авторизация
             val userLocal = session.getAuthorizationVerifyUser(userData)
             if (userLocal != null) {
-                login(user = userLocal, token = null)
+                login(user = userLocal, token = null, message = resources.getString(R.string.LoginLocalSuccessful))
             } else {
                 Toast.makeText(
                     this@AuthActivity,
@@ -251,7 +257,7 @@ class AuthActivity : AppCompatActivity() {
         }
     }
 
-    private fun login(user: User, token: String?) {
+    private fun login(user: User, token: String?, message: String) {
         // прописываем пользователя в сессию, редирект на рабочие страницы
         session.login(
             user = user,
@@ -259,7 +265,7 @@ class AuthActivity : AppCompatActivity() {
         )
         Toast.makeText(
             this@AuthActivity,
-            resources.getString(R.string.LoginLocalSuccessful),
+            message,
             Toast.LENGTH_SHORT
         ).show()
         val intent = Intent(this@AuthActivity, MainSelectionActivity::class.java)

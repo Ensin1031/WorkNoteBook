@@ -20,6 +20,12 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // При старте приложения принудительно вызываем,
+        // для предварительного создания / обновления БД
+        val helper = DBHelper(this)
+        helper.writableDatabase
+
         initViews()
         val user = session.getUser()
         if (user != null) {

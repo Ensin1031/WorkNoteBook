@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="34dp"
+    android:height="34dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Внешний круг -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="?attr/colorControlNormal"
+        android:strokeWidth="32"
+        android:strokeLineJoin="miter"
+        android:pathData="M256,48
+                          C141.13,48 48,141.13 48,256
+                          C48,370.87 141.13,464 256,464
+                          C370.87,464 464,370.87 464,256
+                          C464,141.13 370.87,48 256,48Z"/>
+
+    <!-- Вертикальный эллипс -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="?attr/colorControlNormal"
+        android:strokeWidth="32"
+        android:pathData="M256,48
+                          C197.93,48 143.33,141.13 143.33,256
+                          C143.33,370.87 197.93,464 256,464
+                          C314.07,464 368.67,370.87 368.67,256
+                          C368.67,141.13 314.07,48 256,48Z"/>
+
+    <!-- Верхняя дуга -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="?attr/colorControlNormal"
+        android:strokeWidth="32"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M117.33,117.33
+                          C155.57,144.48 203.71,160.67 256,160.67
+                          C308.29,160.67 356.43,144.48 394.67,117.33"/>
+
+    <!-- Нижняя дуга -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="?attr/colorControlNormal"
+        android:strokeWidth="32"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M394.67,394.67
+                          C356.43,367.52 308.29,351.33 256,351.33
+                          C203.71,351.33 155.57,367.52 117.33,394.67"/>
+
+    <!-- Вертикальная линия -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="?attr/colorControlNormal"
+        android:strokeWidth="32"
+        android:pathData="M256,48 L256,464"/>
+
+    <!-- Горизонтальная линия -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="?attr/colorControlNormal"
+        android:strokeWidth="32"
+        android:pathData="M464,256 L48,256"/>
+
+</vector>

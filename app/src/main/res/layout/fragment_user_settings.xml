@@ -1,30 +1,699 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/lightLightGray">
+    android:id="@+id/page_user_settings_container"
+    android:background="@color/lightLightGray"
+    tools:context=".UserSettingsFragment">
 
-    <!-- TabLayout для вкладок -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:contentDescription="@string/UserSettings"
-        app:tabIndicatorColor="@color/primaryBTNColor"
-        app:tabIndicatorHeight="3dp"
-        app:tabSelectedTextColor="@color/primaryBTNColor"
-        app:tabTextColor="@color/textLight"
-        app:tabMode="fixed"
-        app:tabGravity="fill"/>
-
-    <!-- Контейнер для фрагментов -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-</LinearLayout>
+        <ScrollView
+            android:id="@+id/scroll_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:id="@+id/page_note_item"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/lightLightGray"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp"
+                android:paddingBottom="40dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_linear_block"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <!-- Именование блока -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="5dp"
+                        android:paddingVertical="3dp"
+                        tools:ignore="UseCompoundDrawables">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/UserData"
+                            android:textColor="@color/textColor"
+                            android:fontFamily="@font/inter_bold"
+                            android:textSize="18sp" />
+
+                        <ImageView
+                            android:id="@+id/iv_user_settings_verified"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:visibility="gone"
+                            android:src="@drawable/ic_checked_row"
+                            android:layout_marginStart="10dp"
+                            android:contentDescription="@string/user_is_verified" />
+
+                    </LinearLayout>
+
+                    <!-- Блок с Login -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_login"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_login"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/user_login"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_login"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_pencil_green"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_login_close"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_cancel_red"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_user_settings_login_edit_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_enabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" >
+
+                        <EditText
+                            android:id="@+id/te_user_settings_login_change"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:autofillHints="@string/AddNewLogin"
+                            android:background="@drawable/bg_edit_text"
+                            android:fontFamily="@font/inter"
+                            android:hint="@string/AddNewLogin"
+                            android:text=""
+                            android:inputType="text"
+                            android:minHeight="48dp"
+                            android:padding="12dp"
+                            android:textColor="@color/textColor"
+                            android:textColorHint="@color/textLight"
+                            android:textSize="16sp" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_login_save"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:layout_marginStart="5dp"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_check_confirm" />
+
+                    </LinearLayout>
+
+                    <!-- Блок с Email -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_email"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_email"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/user_email"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_email"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_pencil_green"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <!-- Блок с Password -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_pass"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_password"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/FakePassword"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:ignore="RtlSymmetry" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_password"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_pencil_green"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_password_close"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_cancel_red"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_user_settings_password_edit_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_enabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" >
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_edit_text_enabled"
+                            android:gravity="center_vertical"
+                            android:orientation="vertical"
+                            android:padding="0dp">
+
+                            <EditText
+                                android:id="@+id/te_user_settings_password_old_change"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:autofillHints="@string/AddNewLogin"
+                                android:background="@drawable/bg_edit_text"
+                                android:fontFamily="@font/inter"
+                                android:hint="@string/AddOldPassword"
+                                android:text=""
+                                android:inputType="textPassword"
+                                android:minHeight="48dp"
+                                android:padding="12dp"
+                                android:textColor="@color/textColor"
+                                android:textColorHint="@color/textLight"
+                                android:textSize="16sp" />
+
+                            <EditText
+                                android:id="@+id/te_user_settings_password_new_change"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:autofillHints="@string/AddNewLogin"
+                                android:background="@drawable/bg_edit_text"
+                                android:fontFamily="@font/inter"
+                                android:hint="@string/AddNewPassword"
+                                android:text=""
+                                android:inputType="textPassword"
+                                android:minHeight="48dp"
+                                android:layout_marginTop="7dp"
+                                android:padding="12dp"
+                                android:textColor="@color/textColor"
+                                android:textColorHint="@color/textLight"
+                                android:textSize="16sp" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_password_save"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:layout_marginStart="5dp"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_check_confirm" />
+
+                    </LinearLayout>
+
+                    <!-- Блок с ФИО -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_name"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_name"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/user_name"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_name"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_pencil_green"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <!-- Блок с Датой рождения -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_birthdate"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_birthdate"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/user_birthdate"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_birthdate"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_pencil_green"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_birthdate_close"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_cancel_red"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_user_settings_birthdate_edit_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_enabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" >
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_edit_text_enabled"
+                            android:gravity="center_vertical"
+                            android:orientation="vertical"
+                            android:padding="0dp">
+
+                            <EditText
+                                android:id="@+id/te_user_settings_birthdate_change"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:autofillHints="@string/AddUserBirthdate"
+                                android:fontFamily="@font/inter"
+                                android:hint="@string/AddUserBirthdate"
+                                android:inputType="date"
+                                android:focusable="false"
+                                android:background="@drawable/bg_edit_text"
+                                android:padding="12dp"
+                                android:textColor="@color/textColor"
+                                android:textColorHint="@color/textLight"
+                                android:textSize="16sp"
+                                android:drawablePadding="8dp" />
+
+                            <TextView
+                                android:id="@+id/tv_user_settings_birthdate_save_error"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:minWidth="120dp"
+                                android:paddingHorizontal="5dp"
+                                android:paddingVertical="0dp"
+                                android:text=""
+                                android:textColor="@color/redColor"
+                                android:textSize="12sp"
+                                android:visibility="gone"/>
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_birthdate_save"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:layout_marginStart="5dp"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_check_confirm" />
+
+                    </LinearLayout>
+
+                    <!-- Блок с Полом пользователя -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_gender"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_gender"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/user_gender"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_gender"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_pencil_green"
+                            android:visibility="gone" />
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_gender_close"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="bottom"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_cancel_red"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_user_settings_gender_edit_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_enabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" >
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/il_user_settings_gender_edit"
+                            android:background="@drawable/bg_edit_text"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content">
+
+                            <RadioGroup
+                                android:id="@+id/rg_user_settings_gender_edit"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:padding="8dp">
+
+                                <RadioButton
+                                    android:id="@+id/rb_user_settings_gender_edit_unset"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/gender_not_selected"
+                                    android:backgroundTint="@color/black"
+                                    android:textColor="@color/textColor"
+                                    android:textSize="16sp"
+                                    android:layout_marginEnd="16dp" />
+
+                                <RadioButton
+                                    android:id="@+id/rb_user_settings_gender_edit_male"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/gender_male"
+                                    android:textColor="@color/textColor"
+                                    android:textSize="16sp"
+                                    android:layout_marginEnd="16dp" />
+
+                                <RadioButton
+                                    android:id="@+id/rb_user_settings_gender_edit_female"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/gender_female"
+                                    android:textColor="@color/textColor"
+                                    android:textSize="16sp" />
+
+                            </RadioGroup>
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <ImageButton
+                            android:id="@+id/btn_user_settings_gender_save"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="?selectableItemBackgroundBorderless"
+                            android:layout_marginStart="5dp"
+                            android:contentDescription="@string/edit"
+                            android:src="@drawable/ic_check_confirm" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_linear_block"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <!-- Именование блока -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingVertical="3dp"
+                        android:text="@string/UserSettings"
+                        android:textColor="@color/textColor"
+                        android:fontFamily="@font/inter_bold"
+                        android:textSize="18sp" />
+
+                    <!-- Блок с Login -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:minWidth="120dp"
+                        android:paddingHorizontal="5dp"
+                        android:paddingBottom="3dp"
+                        android:text="@string/user_account_created"
+                        android:textColor="@color/textColor"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_settings_created"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/user_account_created"
+                            android:textColor="@color/textColor"
+                            android:textSize="16sp"
+                            tools:ignore="RtlSymmetry" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Кнопка выхода -->
+                <Button
+                    android:id="@+id/btn_logout"
+                    android:layout_width="320dp"
+                    android:layout_height="57dp"
+                    android:layout_gravity="center_horizontal"
+                    android:backgroundTint="@color/textColor"
+                    android:textColor="@color/white"
+                    android:layout_margin="8dp"
+                    android:maxWidth="320dp"
+                    android:minWidth="200dp"
+                    android:text="@string/logout"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
