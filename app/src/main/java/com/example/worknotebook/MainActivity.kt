@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun initViews() {
-        session = UserSessionManager(this)
+        session = UserSessionManager.getInstance(this)
     }
     private fun navigateToMainSelection() {
         startActivity(Intent(this, MainSelectionActivity::class.java).apply {

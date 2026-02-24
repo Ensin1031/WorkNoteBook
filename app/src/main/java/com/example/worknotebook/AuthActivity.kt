@@ -48,7 +48,7 @@ class AuthActivity : AppCompatActivity() {
         startConnectionCheck()
     }
     private fun initViews() {
-        session = UserSessionManager(this)
+        session = UserSessionManager.getInstance(this)
         userLogin = findViewById(R.id.ett_auth_login)
         userPass = findViewById(R.id.ett_auth_pass)
         btnAuth = findViewById(R.id.btn_auth)

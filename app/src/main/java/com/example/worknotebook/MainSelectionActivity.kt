@@ -8,24 +8,61 @@ import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.navigation.NavigationBarView
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
+class MainSharedViewModel : ViewModel() {
+
+    private val _hasConnection = MutableStateFlow(false)
+    val hasConnection: StateFlow<Boolean> = _hasConnection
+    fun setConnectionState(value: Boolean) {
+        _hasConnection.value = value
+    }
+
+    private val _noteFilters = MutableStateFlow(NodeFilters(
+        byPriorityDesc = true,
+        byUpdatedAtDesc = true,
+        byActiveDesc = true,
+    ))
+    val noteFilters: StateFlow<NodeFilters> = _noteFilters
+    fun setNoteFilters(filters: NodeFilters) {
+        _noteFilters.value = filters
+    }
+
+    private val _meetingFilters = MutableStateFlow(MeetingFilters(
+        byMeetingAtDesc = true,
+        byUpdatedAtDesc = true,
+        byActiveDesc = true,
+    ))
+    val meetingFilters: StateFlow<MeetingFilters> = _meetingFilters
+    fun setMeetingFilters(filters: MeetingFilters) {
+        _meetingFilters.value = filters
+    }
+}
+
+
 class MainSelectionActivity : AppCompatActivity() {
+
+    private val sharedViewModel: MainSharedViewModel by viewModels()
 
     private var hasConnection: Boolean = false
 
     private lateinit var session: UserSessionManager
     private lateinit var progressBar: ProgressBar
     private lateinit var bottomNavigation: NavigationBarView
+    private lateinit var btnHeaderFilters: ImageButton
     private lateinit var btnHeaderMenu: ImageButton
     private var currentNavItemId: Int = R.id.nav_notes
     private lateinit var backConnectBTN: ImageButton
@@ -33,6 +70,10 @@ class MainSelectionActivity : AppCompatActivity() {
     companion object {
         private const val KEY_NAV_ITEM = "current_nav_item"
         private const val KEY_HAS_CONNECTION_STATE = "has_connection"
+        const val OPEN_FRAGMENT = "open_fragment"
+        const val FRAGMENT_NOTES = "fragment_notes"
+        const val FRAGMENT_MEETINGS = "fragment_meetings"
+        const val FRAGMENT_USER_SETTINGS = "fragment_user_settings"
     }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -52,6 +93,8 @@ class MainSelectionActivity : AppCompatActivity() {
         initViews()
         initData()
 
+        val fragmentToOpen = intent.getStringExtra(OPEN_FRAGMENT)
+
         // Установка начального фрагмента
         if (savedInstanceState != null) {
             // Запуск с сохраненным фрагментом
@@ -60,7 +103,13 @@ class MainSelectionActivity : AppCompatActivity() {
             loadFragmentForId(currentNavItemId) // загружаем фрагмент по сохранённому ID
         } else {
             // Первый запуск
-            currentNavItemId = R.id.nav_notes
+            currentNavItemId = when (fragmentToOpen) {
+                FRAGMENT_NOTES -> R.id.nav_notes
+                FRAGMENT_MEETINGS -> R.id.nav_meetings
+                FRAGMENT_USER_SETTINGS -> R.id.nav_settings
+                else -> R.id.nav_notes
+            }
+            initHeaderSettingsMenu(navItemId = currentNavItemId)
             bottomNavigation.selectedItemId = currentNavItemId
             loadFragment(NotesFragment.newInstance())
         }
@@ -71,13 +120,30 @@ class MainSelectionActivity : AppCompatActivity() {
             loadFragmentForId(currentNavItemId)
             true
         }
+
+        // Прослушиваем событие ввода пароля -> пытаемся перелогиниться на бэке + после локально.
+        supportFragmentManager.setFragmentResultListener(
+            DialogSetPassword.RESULT_KEY,
+            this
+        ) { _, bundle ->
+            val inputPassword = bundle.getString(DialogSetPassword.RESULT_KEY).orEmpty()
+            val user = session.getUser()
+            if (user != null) {
+                if (!inputPassword.trim().isEmpty()) {
+                    loginToBack(login = user.login, password = inputPassword.trim())
+                }
+            } else {
+                logout()
+            }
+        }
     }
     private fun loadFragmentForId(itemId: Int) {
+        initHeaderSettingsMenu(navItemId = itemId)
         val fragment = when (itemId) {
             R.id.nav_notes -> NotesFragment.newInstance()
             R.id.nav_meetings -> MeetingsFragment.newInstance()
             R.id.nav_profile -> MeetingsFragment.newInstance()
-            R.id.nav_settings -> UserSettingsFragment.newInstance(hasConnection)
+            R.id.nav_settings -> UserSettingsFragment.newInstance()
             else -> null
         }
         fragment?.let {
@@ -92,11 +158,44 @@ class MainSelectionActivity : AppCompatActivity() {
             .commit()
     }
     private fun initViews() {
-        session = UserSessionManager(this)
+        session = UserSessionManager.getInstance(this)
         progressBar = findViewById(R.id.main_selection_page_header_progress_bar)
         bottomNavigation = findViewById(R.id.bottom_main_navigation)
-        btnHeaderMenu = findViewById(R.id.btn_note_item_header_menu)
+        btnHeaderFilters = findViewById(R.id.btn_main_header_filters)
+        btnHeaderMenu = findViewById(R.id.btn_main_header_menu)
         backConnectBTN = findViewById(R.id.btn_back_connect_header)
+    }
+    private fun initHeaderSettingsMenu(navItemId: Int) {
+        when (navItemId) {
+            R.id.nav_notes -> {
+                btnHeaderFilters.apply {
+                    visibility = View.VISIBLE
+                    isEnabled = true
+                    setOnClickListener {
+                        DialogNoteFilters
+                            .newInstance(filters = sharedViewModel.noteFilters.value)
+                            .show(supportFragmentManager, "DialogNoteFilters")
+                    }
+                }
+            }
+            R.id.nav_meetings -> {
+                btnHeaderFilters.apply {
+                    visibility = View.VISIBLE
+                    isEnabled = true
+                    setOnClickListener {
+                        DialogMeetingFilters
+                            .newInstance(filters = sharedViewModel.meetingFilters.value)
+                            .show(supportFragmentManager, "DialogMeetingFilters")
+                    }
+                }
+            }
+            else -> {
+                btnHeaderFilters.apply {
+                    visibility = View.GONE
+                    isEnabled = false
+                }
+            }
+        }
     }
     private fun initData() {
         RetrofitClient.init(this)
@@ -136,12 +235,12 @@ class MainSelectionActivity : AppCompatActivity() {
                     hasConnection = response.isSuccessful && response.body() == true
                     progressBar.visibility = View.GONE
                     initCheckConnectionData()
-                    loadFragmentForId(currentNavItemId)
+                    sharedViewModel.setConnectionState(hasConnection)
                 } catch (e: Exception) {
                     hasConnection = false
                     progressBar.visibility = View.GONE
                     initCheckConnectionData()
-                    loadFragmentForId(currentNavItemId)
+                    sharedViewModel.setConnectionState(hasConnection)
                 }
             }
         }
@@ -155,12 +254,9 @@ class MainSelectionActivity : AppCompatActivity() {
                 backConnectBTN.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.redDarkColor))
             }
             backConnectBTN.setOnClickListener {
-                val dialog = DialogSetPassword { enteredPassword ->
-                    if (!enteredPassword.trim().isEmpty()) {
-                        loginToBack(login = user.login, password = enteredPassword.trim())
-                    }
-                }
-                dialog.show(supportFragmentManager, "DialogSetPassword")
+                DialogSetPassword
+                    .newInstance()
+                    .show(supportFragmentManager, "DialogSetPassword")
             }
         } else {
             logout()
@@ -184,12 +280,12 @@ class MainSelectionActivity : AppCompatActivity() {
                 hasConnection = response.isSuccessful && response.body() == true
                 progressBar.visibility = View.GONE
                 initCheckConnectionData()
-                loadFragmentForId(currentNavItemId)
+                sharedViewModel.setConnectionState(hasConnection)
             } catch (e: Exception) {
                 hasConnection = false
                 progressBar.visibility = View.GONE
                 initCheckConnectionData()
-                loadFragmentForId(currentNavItemId)
+                sharedViewModel.setConnectionState(hasConnection)
             }
         }
     }
@@ -202,7 +298,7 @@ class MainSelectionActivity : AppCompatActivity() {
         hasConnection = true
         progressBar.visibility = View.GONE
         initData()
-        loadFragmentForId(currentNavItemId)
+        sharedViewModel.setConnectionState(hasConnection)
     }
     private fun loginFailed(message: String) {
         Toast.makeText(
@@ -213,7 +309,7 @@ class MainSelectionActivity : AppCompatActivity() {
         hasConnection = false
         progressBar.visibility = View.GONE
         initData()
-        loadFragmentForId(currentNavItemId)
+        sharedViewModel.setConnectionState(hasConnection)
     }
     private fun loginToBack(login: String, password: String) {
         showLoadingState()

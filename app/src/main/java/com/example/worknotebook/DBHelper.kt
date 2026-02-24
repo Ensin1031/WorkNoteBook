@@ -49,19 +49,22 @@ object PasswordHasher {
 
 const val TIMESTAMP_1900: Long = -2208988800000
 
+const val USER_TABLE = "users"
+const val USER_SETTINGS_TABLE = "user_settings"
+const val MEETING_TABLE = "meetings"
+const val NOTE_TABLE = "notes"
+
 
 class DBHelper(
     context: Context,
     factory: SQLiteDatabase.CursorFactory? = null,
-) : SQLiteOpenHelper(context, "workbook.db", factory, 1) {
-
-    private val currentTimeSql = "(strftime('%s','now') * 1000)"
+) : SQLiteOpenHelper(context, "workbook.db", factory, 5) {
 
     override fun onCreate(db: SQLiteDatabase?) {
         Log.d("DB_DEBUG", "-----===== onCreate called =====-----")  // TODO нужен на этапе разработки. потом убрать.
         // Создание таблицы пользователя
         val createUsersTable = """
-            CREATE TABLE users (
+            CREATE TABLE $USER_TABLE (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 external_id INTEGER UNIQUE,
                 name TEXT,
@@ -79,59 +82,56 @@ class DBHelper(
         """.trimIndent()
         db?.execSQL(createUsersTable)
 
-        // Создание таблицы встреч пользователя
+        // Создание таблицы настроек пользователя
         db?.execSQL("""
-            CREATE TABLE meetings (
+            CREATE TABLE $USER_SETTINGS_TABLE (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                title TEXT,
-                description TEXT,
-                meeting_at INTEGER,
-                location TEXT,
-                created_at INTEGER DEFAULT $currentTimeSql,
-                updated_at INTEGER DEFAULT $currentTimeSql,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                user_id INTEGER UNIQUE,
+                sync_meetings_immediately INTEGER DEFAULT 1,
+                sync_notes_immediately INTEGER DEFAULT 1,
+                FOREIGN KEY (user_id) REFERENCES $USER_TABLE(id) ON DELETE CASCADE
             )
         """.trimIndent())
 
+        // Создание таблицы встреч пользователя
         db?.execSQL("""
-            CREATE TRIGGER meetings_update_trigger
-            AFTER UPDATE ON meetings
-            FOR EACH ROW
-            BEGIN
-                UPDATE meetings
-                SET updated_at = $currentTimeSql
-                WHERE id = OLD.id;
-            END;
+            CREATE TABLE $MEETING_TABLE (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                external_id INTEGER DEFAULT NULL,
+                user_id INTEGER NOT NULL,
+                external_user_id INTEGER DEFAULT NULL,
+                title TEXT,
+                description TEXT,
+                meeting_at INTEGER DEFAULT NULL,
+                location TEXT,
+                created_at INTEGER DEFAULT NULL,
+                updated_at INTEGER DEFAULT NULL,
+                is_active INTEGER DEFAULT 1,
+                FOREIGN KEY (user_id) REFERENCES $USER_TABLE(id) ON DELETE CASCADE
+            )
         """.trimIndent())
 
         // Создание таблицы заметок пользователя
         db?.execSQL("""
-            CREATE TABLE notes (
+            CREATE TABLE $NOTE_TABLE (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                external_id INTEGER DEFAULT NULL,
                 user_id INTEGER NOT NULL,
-                parent_note_id INTEGER,
-                meeting_id INTEGER,
+                external_user_id INTEGER DEFAULT NULL,
+                parent_note_id INTEGER DEFAULT NULL,
+                external_parent_note_id INTEGER DEFAULT NULL,
+                meeting_id INTEGER DEFAULT NULL,
+                external_meeting_id INTEGER DEFAULT NULL,
                 title TEXT,
                 content TEXT,
-                created_at INTEGER DEFAULT $currentTimeSql,
-                updated_at INTEGER DEFAULT $currentTimeSql,
+                created_at INTEGER DEFAULT NULL,
+                updated_at INTEGER DEFAULT NULL,
                 priority TEXT DEFAULT '${NotePriority.NORMAL.name}',
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (parent_note_id) REFERENCES notes(id) ON DELETE SET NULL,
-                FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL
+                is_active INTEGER DEFAULT 1,
+                FOREIGN KEY (user_id) REFERENCES $USER_TABLE(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_note_id) REFERENCES $NOTE_TABLE(id) ON DELETE SET NULL,
+                FOREIGN KEY (meeting_id) REFERENCES $MEETING_TABLE(id) ON DELETE SET NULL
             )
-        """.trimIndent())
-
-        db?.execSQL("""
-            CREATE TRIGGER notes_update_trigger
-            AFTER UPDATE ON notes
-            FOR EACH ROW
-            BEGIN
-                UPDATE notes
-                SET updated_at = $currentTimeSql
-                WHERE id = OLD.id;
-            END;
         """.trimIndent())
     }
 
@@ -140,12 +140,10 @@ class DBHelper(
         oldVersion: Int,
         newVersion: Int
     ) {
-        db?.execSQL("DROP TRIGGER IF EXISTS meetings_update_trigger")
-        db?.execSQL("DROP TRIGGER IF EXISTS notes_update_trigger")
-
-        db?.execSQL("DROP TABLE IF EXISTS meetings")
-        db?.execSQL("DROP TABLE IF EXISTS notes")
-        db?.execSQL("DROP TABLE IF EXISTS users")
+        db?.execSQL("DROP TABLE IF EXISTS $MEETING_TABLE")
+        db?.execSQL("DROP TABLE IF EXISTS $NOTE_TABLE")
+        db?.execSQL("DROP TABLE IF EXISTS $USER_SETTINGS_TABLE")
+        db?.execSQL("DROP TABLE IF EXISTS $USER_TABLE")
 
         onCreate(db)
     }
@@ -164,39 +162,50 @@ class DBHelper(
             isAdmin = cursor.getInt(cursor.getColumnIndexOrThrow("is_admin")) == 1,
             birthdateAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("birthdate_at")),
             gender = GenderType.fromInt(cursor.getInt(cursor.getColumnIndexOrThrow("gender")))
-//            birthdateAt = if (cursor.isNull(birthdateIndex)) {
-//                null
-//            } else {
-//                cursor.getLong(birthdateIndex)
-//            },
+        )
+    }
+
+    private fun cursorToUserSettings(cursor: Cursor): UserSettings {
+        return UserSettings(
+            id = cursor.getLong(cursor.getColumnIndexOrThrow("id")),
+            userId = cursor.getLong(cursor.getColumnIndexOrThrow("user_id")),
+            syncMeetingsImmediately = cursor.getInt(cursor.getColumnIndexOrThrow("sync_meetings_immediately")) == 1,
+            syncNotesImmediately = cursor.getInt(cursor.getColumnIndexOrThrow("sync_notes_immediately")) == 1,
         )
     }
 
     private fun cursorToMeeting(cursor: Cursor): Meeting {
         return Meeting(
             id = cursor.getLong(cursor.getColumnIndexOrThrow("id")),
+            externalId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("external_id")),
             userId = cursor.getLong(cursor.getColumnIndexOrThrow("user_id")),
+            externalUserId = cursor.getLong(cursor.getColumnIndexOrThrow("external_user_id")),
             title = cursor.getString(cursor.getColumnIndexOrThrow("title")),
             description = cursor.getString(cursor.getColumnIndexOrThrow("description")),
             meetingAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("meeting_at")),
             location = cursor.getString(cursor.getColumnIndexOrThrow("location")),
             createdAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("created_at")),
-            updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at"))
+            updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at")),
+            isActive = cursor.getInt(cursor.getColumnIndexOrThrow("is_active")) == 1,
         )
     }
 
     private fun cursorToNote(cursor: Cursor): Note {
         return Note(
             id = cursor.getLong(cursor.getColumnIndexOrThrow("id")),
+            externalId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("external_id")),
             userId = cursor.getLong(cursor.getColumnIndexOrThrow("user_id")),
+            externalUserId = cursor.getLong(cursor.getColumnIndexOrThrow("external_user_id")),
             parentNoteId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("parent_note_id")),
+            externalParentNoteId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("external_parent_note_id")),
             meetingId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("meeting_id")),
+            externalMeetingId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("external_meeting_id")),
             title = cursor.getString(cursor.getColumnIndexOrThrow("title")),
             content = cursor.getString(cursor.getColumnIndexOrThrow("content")),
             createdAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("created_at")),
             updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at")),
+            isActive = cursor.getInt(cursor.getColumnIndexOrThrow("is_active")) == 1,
             priority = NotePriority.fromString(cursor.getString(cursor.getColumnIndexOrThrow("priority")))
-//            priority = NotePriority.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("priority")))
         )
     }
 
@@ -220,7 +229,7 @@ class DBHelper(
             put("salt", salt)
         }
         val db = writableDatabase
-        val id = db.insert("users", null, values)
+        val id = db.insert(USER_TABLE, null, values)
         db.close()
         return id
     }
@@ -234,7 +243,7 @@ class DBHelper(
 
                 // Поиск пользователя по externalId
                 val cursorById = db.query(
-                    "users",
+                    USER_TABLE,
                     arrayOf("id"),
                     "external_id = ?",
                     arrayOf(userData.externalId.toString()),
@@ -248,7 +257,7 @@ class DBHelper(
                 // Если не найден по externalId, ищем по логину или email
                 if (targetUserId == null) {
                     val cursorByLoginEmail = db.query(
-                        "users",
+                        USER_TABLE,
                         arrayOf("id"),
                         "login = ? OR email = ?",
                         arrayOf(userData.login, userData.email),
@@ -278,7 +287,7 @@ class DBHelper(
                         put("password", passHash)
                         put("salt", salt)
                     }
-                    targetUserId = db.insert("users", null, newUserValues)
+                    targetUserId = db.insert(USER_TABLE, null, newUserValues)
                     if (targetUserId == -1L) {
                         throw RuntimeException("Failed to insert user")
                     }
@@ -286,7 +295,7 @@ class DBHelper(
 
                 // Обработка дубликатов (других пользователей с таким же login/email, кроме целевого)
                 val duplicateCursor = db.query(
-                    "users",
+                    USER_TABLE,
                     arrayOf("id"),
                     "(login = ? OR email = ?) AND id != ?",
                     arrayOf(userData.login, userData.email, targetUserId.toString()),
@@ -301,14 +310,14 @@ class DBHelper(
                 for (dupId in duplicateIds) {
                     // Перенос встреч на целевого пользователя
                     val meetingValues = ContentValues().apply { put("user_id", targetUserId) }
-                    db.update("meetings", meetingValues, "user_id = ?", arrayOf(dupId.toString()))
+                    db.update(MEETING_TABLE, meetingValues, "user_id = ?", arrayOf(dupId.toString()))
 
                     // Перенос заметок на целевого пользователя
                     val noteValues = ContentValues().apply { put("user_id", targetUserId) }
-                    db.update("notes", noteValues, "user_id = ?", arrayOf(dupId.toString()))
+                    db.update(NOTE_TABLE, noteValues, "user_id = ?", arrayOf(dupId.toString()))
 
                     // Удаление дублирующего пользователя
-                    db.delete("users", "id = ?", arrayOf(dupId.toString()))
+                    db.delete(USER_TABLE, "id = ?", arrayOf(dupId.toString()))
                 }
 
                 // Обновление данных целевого пользователя
@@ -329,10 +338,10 @@ class DBHelper(
                         put("salt", salt)
                     }
                 }
-                db.update("users", updateValues, "id = ?", arrayOf(targetUserId.toString()))
+                db.update(USER_TABLE, updateValues, "id = ?", arrayOf(targetUserId.toString()))
 
                 // Возвращаем обновлённого пользователя
-                val resultCursor = db.query("users", null, "id = ?", arrayOf(targetUserId.toString()), null, null, null)
+                val resultCursor = db.query(USER_TABLE, null, "id = ?", arrayOf(targetUserId.toString()), null, null, null)
                 val resultUser = if (resultCursor.moveToFirst()) cursorToUser(resultCursor) else null
                 resultCursor.close()
                 resultUser
@@ -346,7 +355,7 @@ class DBHelper(
     fun getAuthorizationVerifyUser(userAuthData: LoginRequest): User? {
         val db = readableDatabase
         val cursor = db.query(
-            "users",
+            USER_TABLE,
             null,
             "login = ? OR email = ?",
             arrayOf(userAuthData.login, userAuthData.login),
@@ -373,7 +382,7 @@ class DBHelper(
     fun getUserById(id: Long): User? {
         val db = readableDatabase
         val cursor = db.query(
-            "users",
+            USER_TABLE,
             null,
             "id = ?",
             arrayOf(id.toString()),
@@ -388,7 +397,7 @@ class DBHelper(
     fun getUserByLogin(login: String): User? {
         val db = readableDatabase
         val cursor = db.query(
-            "users",
+            USER_TABLE,
             null,
             "login = ?",
             arrayOf(login),
@@ -403,7 +412,7 @@ class DBHelper(
     fun getUserByEmail(email: String): User? {
         val db = readableDatabase
         val cursor = db.query(
-            "users",
+            USER_TABLE,
             null,
             "email = ?",
             arrayOf(email),
@@ -448,24 +457,57 @@ class DBHelper(
             }
         }
         val db = writableDatabase
-        val updated = db.update("users", values, "id = ?", arrayOf(userId.toString()))
+        val updated = db.update(USER_TABLE, values, "id = ?", arrayOf(userId.toString()))
         db.close()
         return updated
     }
 
-    fun deleteUser(id: Long): Int {
+    // ========== Методы для user_settings ==========
+    fun getOrCreateUserSettings(userId: Long): UserSettings {
+        writableDatabase.use { db ->
+
+            db.execSQL(
+                "INSERT OR IGNORE INTO $USER_SETTINGS_TABLE(user_id) VALUES(?)",
+                arrayOf(userId)
+            )
+
+            db.query(
+                USER_SETTINGS_TABLE,
+                null,
+                "user_id = ?",
+                arrayOf(userId.toString()),
+                null, null, null
+            ).use { cursor ->
+
+                if (cursor.moveToFirst()) {
+                    return cursorToUserSettings(cursor)
+                } else {
+                    error("Системная ошибка")
+                }
+            }
+        }
+    }
+    fun updateUserSettings(userSettingsId: Long, syncMeetingsImmediately: Boolean, syncNotesImmediately: Boolean): Boolean {
+        val values = ContentValues().apply {
+            put("sync_meetings_immediately", if (syncMeetingsImmediately) { 1 } else { 0 })
+            put("sync_notes_immediately", if (syncNotesImmediately) { 1 } else { 0 })
+        }
         val db = writableDatabase
-        val deleted = db.delete("users", "id = ?", arrayOf(id.toString()))
+        val updated = db.update(USER_SETTINGS_TABLE, values, "id = ?", arrayOf(userSettingsId.toString()))
         db.close()
-        return deleted
+        return updated >= 1
     }
 
     // ========== Методы для notes ==========
     fun addNote(note: Note): Long {
         val values = ContentValues().apply {
             put("user_id", note.userId)
+            put("external_user_id", note.externalUserId)
+            put("external_id", note.externalId)
             put("parent_note_id", note.parentNoteId)
+            put("external_parent_note_id", note.externalParentNoteId)
             put("meeting_id", note.meetingId)
+            put("external_meeting_id", note.externalMeetingId)
             put("title", note.title)
             put("content", note.content)
             put("created_at", note.createdAt)
@@ -473,20 +515,117 @@ class DBHelper(
             put("priority", note.priority.name)
         }
         val db = writableDatabase
-        val id = db.insert("notes", null, values)
+        val id = db.insert(NOTE_TABLE, null, values)
         db.close()
         return id
     }
 
-    fun getNotesByUser(userId: Long): List<Note> {
+    fun getNotesByUser(userId: Long, filters: NodeFilters): List<Note> {
         val notes = mutableListOf<Note>()
         val db = readableDatabase
+
+        val selectionParts = mutableListOf<String>()
+        val selectionArgs = mutableListOf<String>()
+
+        // Базовое условие фильтрации
+        selectionParts.add("user_id = ?")
+        selectionArgs.add(userId.toString())
+
+        // Фильтр по приоритету
+        val priorityConditions = mutableListOf<String>()
+        if (filters.byPriorityOnlyHigh) priorityConditions.add("priority = 'HIGH'")
+        if (filters.byPriorityOnlyNormal) priorityConditions.add("priority = 'NORMAL'")
+        if (filters.byPriorityOnlyLow) priorityConditions.add("priority = 'LOW'")
+        if (priorityConditions.size == 1) {
+            selectionParts.add(priorityConditions.joinToString())
+        } else if (priorityConditions.size > 1) {
+            // Если выбрано несколько приоритетов, объединяем через OR
+            val prioritiesStr = priorityConditions.joinToString(" OR ")
+            selectionParts.add("($prioritiesStr)")
+        }
+
+        // Фильтр по поисковому запросу
+        if (filters.search.isNotBlank()) {
+            val searchTerm = "%${filters.search}%"
+            selectionParts.add("(title LIKE ? OR content LIKE ?)")
+            selectionArgs.add(searchTerm)
+            selectionArgs.add(searchTerm)
+        }
+
+        // Фильтр, активна ли запись. Случаи, когда активны оба фильтра или оба неактивны - отсекаем.
+        // По умолчанию считаем в этих случаях, что нужно показывать и те и те
+        if (filters.viewOnlyActive && !filters.viewOnlyNotActive) {
+            selectionParts.add("is_active = 1")
+        } else if (filters.viewOnlyNotActive && !filters.viewOnlyActive) {
+            selectionParts.add("is_active = 0")
+        }
+
+        // Фильтр по синхронизации (external_id). Случаи, когда активны оба фильтра или оба неактивны - отсекаем.
+        // По умолчанию считаем в этих случаях, что нужно показывать и те и те
+        if (filters.viewOnlySyncByBack && !filters.viewOnlyNotSyncByBack) {
+            selectionParts.add("external_id IS NOT NULL")
+        }
+        if (filters.viewOnlyNotSyncByBack && !filters.viewOnlySyncByBack) {
+            selectionParts.add("external_id IS NULL")
+        }
+
+        // Построение ORDER BY
+        val orderBy = buildString {
+            // По активности
+            when {
+                filters.byActiveDesc -> append("is_active DESC")
+                filters.byActiveAsc -> append("is_active ASC")
+                else -> {}
+            }
+            // По факту синхронизации с бэком
+            val syncPref = "CASE WHEN external_id IS NULL THEN 1 ELSE 0 END"
+            when {
+                filters.bySyncByBackDesc -> {
+                    if (isNotEmpty()) append(", ")
+                    append("$syncPref DESC")
+                }
+                filters.bySyncByBackAsc -> {
+                    if (isNotEmpty()) append(", ")
+                    append("$syncPref ASC")
+                }
+                else -> {}
+            }
+            // По приоритету
+            val priorityPref = "CASE priority WHEN 'HIGH' THEN 3 WHEN 'NORMAL' THEN 2 WHEN 'LOW' THEN 1 ELSE 0 END"
+            when {
+                filters.byPriorityDesc -> {
+                    if (isNotEmpty()) append(", ")
+                    append("$priorityPref DESC")
+                }
+                filters.byPriorityAsc -> {
+                    if (isNotEmpty()) append(", ")
+                    append("$priorityPref ASC")
+                }
+                else -> {}
+            }
+            // По дате обновления
+            when {
+                filters.byUpdatedAtDesc -> {
+                    if (isNotEmpty()) append(", ")
+                    append("updated_at DESC")
+                }
+                filters.byUpdatedAtAsc -> {
+                    if (isNotEmpty()) append(", ")
+                    append("updated_at ASC")
+                }
+                else -> {}
+            }
+            // Если ни один не задан, сортируем по умолчанию
+            if (isEmpty()) {
+                append("created_at DESC")  // TODO подумать, правильно ли так?
+            }
+        }
+
         val cursor = db.query(
-            "notes",
-            null,
-            "user_id = ?",
-            arrayOf(userId.toString()),
-            null, null, "created_at DESC"
+            NOTE_TABLE, null,
+            selectionParts.joinToString(" AND "),
+            selectionArgs.toTypedArray(),
+            null, null, orderBy
         )
         while (cursor.moveToNext()) {
             notes.add(cursorToNote(cursor))
@@ -499,7 +638,7 @@ class DBHelper(
     fun getNoteById(id: Long): Note? {
         val db = readableDatabase
         val cursor = db.query(
-            "notes",
+            NOTE_TABLE,
             null,
             "id = ?",
             arrayOf(id.toString()),
@@ -514,23 +653,34 @@ class DBHelper(
     fun updateNote(note: Note): Int {
         val values = ContentValues().apply {
             put("user_id", note.userId)
+            put("external_user_id", note.externalUserId)
+            put("external_id", note.externalId)
             put("parent_note_id", note.parentNoteId)
+            put("external_parent_note_id", note.externalParentNoteId)
             put("meeting_id", note.meetingId)
+            put("external_meeting_id", note.externalMeetingId)
             put("title", note.title)
             put("content", note.content)
             put("created_at", note.createdAt)
             put("updated_at", note.updatedAt)
             put("priority", note.priority.name)
+            put("is_active", note.isActive)
         }
         val db = writableDatabase
-        val updated = db.update("notes", values, "id = ?", arrayOf(note.id.toString()))
+        val updated = db.update(NOTE_TABLE, values, "id = ?", arrayOf(note.id.toString()))
         db.close()
         return updated
     }
 
-    fun deleteNote(id: Long): Int {
+    fun deleteNote(id: Long, archive: Boolean): Int {
         val db = writableDatabase
-        val deleted = db.delete("notes", "id = ?", arrayOf(id.toString()))
+        var deleted: Int
+        if (archive) {
+            val values = ContentValues().apply { put("is_active", 0) }
+            deleted = db.update(NOTE_TABLE, values, "id = ?", arrayOf(id.toString()))
+        } else {
+            deleted = db.delete(NOTE_TABLE, "id = ?", arrayOf(id.toString()))
+        }
         db.close()
         return deleted
     }
@@ -539,24 +689,27 @@ class DBHelper(
     fun addMeeting(meeting: Meeting): Long {
         val values = ContentValues().apply {
             put("user_id", meeting.userId)
+            put("external_user_id", meeting.externalUserId)
+            put("external_id", meeting.externalId)
             put("title", meeting.title)
             put("description", meeting.description)
             put("meeting_at", meeting.meetingAt)
             put("location", meeting.location)
             put("created_at", meeting.createdAt)
             put("updated_at", meeting.updatedAt)
+            put("is_active", meeting.isActive)
         }
         val db = writableDatabase
-        val id = db.insert("meetings", null, values)
+        val id = db.insert(MEETING_TABLE, null, values)
         db.close()
         return id
     }
 
-    fun getMeetingsByUser(userId: Long): List<Meeting> {
+    fun getMeetingsByUser(userId: Long, filters: MeetingFilters): List<Meeting> {
         val meetings = mutableListOf<Meeting>()
         val db = readableDatabase
         val cursor = db.query(
-            "meetings",
+            MEETING_TABLE,
             null,
             "user_id = ?",
             arrayOf(userId.toString()),
@@ -573,7 +726,7 @@ class DBHelper(
     fun getMeetingById(id: Long): Meeting? {
         val db = readableDatabase
         val cursor = db.query(
-            "meetings",
+            MEETING_TABLE,
             null,
             "id = ?",
             arrayOf(id.toString()),
@@ -587,23 +740,32 @@ class DBHelper(
 
     fun updateMeeting(meeting: Meeting): Int {
         val values = ContentValues().apply {
+            put("external_id", meeting.externalId)
             put("user_id", meeting.userId)
+            put("external_user_id", meeting.externalUserId)
             put("title", meeting.title)
             put("description", meeting.description)
             put("meeting_at", meeting.meetingAt)
             put("location", meeting.location)
             put("created_at", meeting.createdAt)
             put("updated_at", meeting.updatedAt)
+            put("is_active", meeting.isActive)
         }
         val db = writableDatabase
-        val updated = db.update("meetings", values, "id = ?", arrayOf(meeting.id.toString()))
+        val updated = db.update(MEETING_TABLE, values, "id = ?", arrayOf(meeting.id.toString()))
         db.close()
         return updated
     }
 
-    fun deleteMeeting(id: Long): Int {
+    fun deleteMeeting(id: Long, archive: Boolean): Int {
         val db = writableDatabase
-        val deleted = db.delete("meetings", "id = ?", arrayOf(id.toString()))
+        var deleted: Int
+        if (archive) {
+            val values = ContentValues().apply { put("is_active", 0) }
+            deleted = db.update(MEETING_TABLE, values, "id = ?", arrayOf(id.toString()))
+        } else {
+            deleted = db.delete(MEETING_TABLE, "id = ?", arrayOf(id.toString()))
+        }
         db.close()
         return deleted
     }

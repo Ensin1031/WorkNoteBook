@@ -149,11 +149,7 @@
             android:layout_gravity="center"
             android:background="?selectableItemBackgroundBorderless"
             android:contentDescription="@string/retry"
-            android:src="@drawable/ic_refresh_big"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btn_note_item_header_menu"
-            app:layout_constraintStart_toEndOf="@id/btn_save_note_header"
-            app:layout_constraintTop_toTopOf="parent"/>
+            android:src="@drawable/ic_refresh_big"/>
 
     </LinearLayout>
 

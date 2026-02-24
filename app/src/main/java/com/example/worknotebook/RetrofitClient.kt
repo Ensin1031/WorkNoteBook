@@ -22,7 +22,7 @@ object RetrofitClient {
 
     fun init(context: Context) {
 
-        val session = UserSessionManager(context)
+        val session = UserSessionManager.getInstance(context)
 
         val authInterceptor = AuthInterceptor(session)
 

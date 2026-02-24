@@ -48,7 +48,7 @@ class RegistrationActivity : AppCompatActivity() {
 
     }
     private fun initViews() {
-        session = UserSessionManager(this)
+        session = UserSessionManager.getInstance(this)
         userName = findViewById(R.id.ett_registration_name)
         userLogin = findViewById(R.id.ett_registration_login)
         userEmail = findViewById(R.id.ett_registration_email)
