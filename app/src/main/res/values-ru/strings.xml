@@ -8,6 +8,13 @@
     <string name="NotValidLoginOrPassword">Неверный логин или пароль</string>
     <string name="Registration">Регистрация</string>
     <string name="AddLogin">Введите логин</string>
+    <string name="AddNewLogin">Введите новый логин</string>
+    <string name="AddOldPassword">Введите старый пароль</string>
+    <string name="AddNewPassword">Введите новый пароль</string>
+    <string name="InvalidPassword">Неверный пароль</string>
+    <string name="ChangedPassword">Новый пароль должен отличаться от старого</string>
+    <string name="AddValue">Введите значение</string>
+    <string name="AddNewValue">Введите новое значение</string>
     <string name="Login">Войти</string>
     <string name="or">или</string>
     <string name="OnRegistration">Зарегистрироваться</string>
@@ -31,6 +38,12 @@
     <string name="user_is_verified">Верифицирован</string>
     <string name="user_is_admin">Администратор</string>
     <string name="user_name">ФИО</string>
+    <string name="user_birthdate">Дата рождения</string>
+    <string name="AddUserBirthdate">Выберите дату рождения</string>
+    <string name="AddNewUserBirthdate">Выберите новую дату рождения</string>
+    <string name="user_gender">Пол</string>
+    <string name="user_account_created">Дата создания аккаунта</string>
+    <string name="SuccessfulSaving">Успешное сохранение</string>
     <string name="UserSettings">Настройки пользователя</string>
     <string name="logout">Выйти</string>
     <string name="save_changes">Сохранить изменения</string>
@@ -44,6 +57,7 @@
     <string name="CreateNote">Создать заметку</string>
     <string name="CreateMeeting">Создать встречу</string>
     <string name="Profile">Профиль</string>
+    <string name="UserData">Данные пользователя</string>
     <string name="Settings">Настройки</string>
     <string name="checking_connection">Проверка соединения с сервером…</string>
     <string name="connection_error">Не удалось подключиться к серверу.\nПроверьте интернет и повторите попытку.</string>
@@ -61,10 +75,16 @@
     <string name="cancel">Отменить</string>
     <string name="Cancel">Отмена</string>
     <string name="menu">Меню</string>
+    <string name="checkConnect">Проверить подключение к серверу</string>
+    <string name="syncUserData">Синхронизировать данные</string>
     <string name="set_priority">Установить приоритет</string>
     <string name="select_priority">Выберите приоритет</string>
     <string name="high_priority">Высокий</string>
     <string name="normal_priority">Нормальный</string>
     <string name="low_priority">Низкий</string>
+    <string name="gender_not_selected">Не выбран</string>
+    <string name="gender_male">Мужской</string>
+    <string name="gender_female">Женский</string>
     <string name="errorConnectRegistrationCheck">Сервер недоступен. Войдите в аккаунт для продолжения работы без доступа к серверу.</string>
+    <string name="FakePassword">****************</string>
 </resources>

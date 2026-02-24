@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import androidx.core.database.getLongOrNull
 import androidx.core.database.sqlite.transaction
 import java.security.MessageDigest
@@ -46,14 +47,18 @@ object PasswordHasher {
     }
 }
 
+const val TIMESTAMP_1900: Long = -2208988800000
+
 
 class DBHelper(
     context: Context,
     factory: SQLiteDatabase.CursorFactory? = null,
-) : SQLiteOpenHelper(context, "workNoteBook.db", factory, 2) {
+) : SQLiteOpenHelper(context, "workbook.db", factory, 1) {
+
+    private val currentTimeSql = "(strftime('%s','now') * 1000)"
 
     override fun onCreate(db: SQLiteDatabase?) {
-
+        Log.d("DB_DEBUG", "-----===== onCreate called =====-----")  // TODO нужен на этапе разработки. потом убрать.
         // Создание таблицы пользователя
         val createUsersTable = """
             CREATE TABLE users (
@@ -62,6 +67,12 @@ class DBHelper(
                 name TEXT,
                 login TEXT UNIQUE,
                 email TEXT UNIQUE,
+                verified INTEGER DEFAULT 0,
+                is_admin INTEGER DEFAULT 0,
+                created_at INTEGER DEFAULT NULL,
+                updated_at INTEGER DEFAULT NULL,
+                birthdate_at INTEGER DEFAULT NULL,
+                gender INTEGER DEFAULT ${GenderType.UNSET.value},
                 password TEXT,
                 salt TEXT
             )
@@ -69,23 +80,33 @@ class DBHelper(
         db?.execSQL(createUsersTable)
 
         // Создание таблицы встреч пользователя
-        val createMeetingsTable = """
+        db?.execSQL("""
             CREATE TABLE meetings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
+                user_id INTEGER NOT NULL,
                 title TEXT,
                 description TEXT,
                 meeting_at INTEGER,
                 location TEXT,
-                created_at INTEGER,
-                updated_at INTEGER,
+                created_at INTEGER DEFAULT $currentTimeSql,
+                updated_at INTEGER DEFAULT $currentTimeSql,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
-        """.trimIndent()
-        db?.execSQL(createMeetingsTable)
+        """.trimIndent())
+
+        db?.execSQL("""
+            CREATE TRIGGER meetings_update_trigger
+            AFTER UPDATE ON meetings
+            FOR EACH ROW
+            BEGIN
+                UPDATE meetings
+                SET updated_at = $currentTimeSql
+                WHERE id = OLD.id;
+            END;
+        """.trimIndent())
 
         // Создание таблицы заметок пользователя
-        val createNotesTable = """
+        db?.execSQL("""
             CREATE TABLE notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -93,15 +114,25 @@ class DBHelper(
                 meeting_id INTEGER,
                 title TEXT,
                 content TEXT,
-                created_at INTEGER,
-                updated_at INTEGER,
-                priority TEXT,
+                created_at INTEGER DEFAULT $currentTimeSql,
+                updated_at INTEGER DEFAULT $currentTimeSql,
+                priority TEXT DEFAULT '${NotePriority.NORMAL.name}',
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_note_id) REFERENCES notes(id) ON DELETE SET NULL,
                 FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE SET NULL
             )
-        """.trimIndent()
-        db?.execSQL(createNotesTable)
+        """.trimIndent())
+
+        db?.execSQL("""
+            CREATE TRIGGER notes_update_trigger
+            AFTER UPDATE ON notes
+            FOR EACH ROW
+            BEGIN
+                UPDATE notes
+                SET updated_at = $currentTimeSql
+                WHERE id = OLD.id;
+            END;
+        """.trimIndent())
     }
 
     override fun onUpgrade(
@@ -109,11 +140,13 @@ class DBHelper(
         oldVersion: Int,
         newVersion: Int
     ) {
-        // Удаляем все таблицы (если они существуют)
+        db?.execSQL("DROP TRIGGER IF EXISTS meetings_update_trigger")
+        db?.execSQL("DROP TRIGGER IF EXISTS notes_update_trigger")
+
         db?.execSQL("DROP TABLE IF EXISTS meetings")
         db?.execSQL("DROP TABLE IF EXISTS notes")
         db?.execSQL("DROP TABLE IF EXISTS users")
-        // Создаём заново
+
         onCreate(db)
     }
 
@@ -125,6 +158,17 @@ class DBHelper(
             name = cursor.getString(cursor.getColumnIndexOrThrow("name")),
             login = cursor.getString(cursor.getColumnIndexOrThrow("login")),
             email = cursor.getString(cursor.getColumnIndexOrThrow("email")),
+            createdAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("created_at")),
+            updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at")),
+            verified = cursor.getInt(cursor.getColumnIndexOrThrow("verified")) == 1,
+            isAdmin = cursor.getInt(cursor.getColumnIndexOrThrow("is_admin")) == 1,
+            birthdateAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("birthdate_at")),
+            gender = GenderType.fromInt(cursor.getInt(cursor.getColumnIndexOrThrow("gender")))
+//            birthdateAt = if (cursor.isNull(birthdateIndex)) {
+//                null
+//            } else {
+//                cursor.getLong(birthdateIndex)
+//            },
         )
     }
 
@@ -151,20 +195,27 @@ class DBHelper(
             content = cursor.getString(cursor.getColumnIndexOrThrow("content")),
             createdAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("created_at")),
             updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at")),
-            priority = NotePriority.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("priority")))
+            priority = NotePriority.fromString(cursor.getString(cursor.getColumnIndexOrThrow("priority")))
+//            priority = NotePriority.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("priority")))
         )
     }
 
     // ========== Методы для users ==========
-    fun addUser(user: UserCreateOrUpdate): Long {
+    fun addUser(user: UserCreate): Long {
         val salt = PasswordHasher.generateSalt()
-        val passwordHash = PasswordHasher.hashPassword(user.password!!, salt)
+        val passwordHash = PasswordHasher.hashPassword(user.password, salt)
 
         val values = ContentValues().apply {
             put("external_id", user.externalId)
             put("name", user.name)
             put("login", user.login)
             put("email", user.email)
+            put("created_at", user.createdAt)
+            put("updated_at", user.updatedAt)
+            put("birthdate_at", user.birthdateAt)
+            put("verified", user.verified)
+            put("is_admin", user.isAdmin)
+            put("gender", user.gender.value)
             put("password", passwordHash)
             put("salt", salt)
         }
@@ -175,7 +226,7 @@ class DBHelper(
     }
 
     // Конкатенация пользователя по данным с бэка
-    fun getMergedUser(userData: UserCreateOrUpdate): User? {
+    fun getMergedUser(userData: UserCreate): User? {
         val db = writableDatabase
         return try {
             db.transaction {
@@ -218,6 +269,12 @@ class DBHelper(
                         put("name", userData.name)
                         put("login", userData.login)
                         put("email", userData.email)
+                        put("created_at", userData.createdAt)
+                        put("updated_at", userData.updatedAt)
+                        put("birthdate_at", userData.birthdateAt)
+                        put("verified", userData.verified)
+                        put("is_admin", userData.isAdmin)
+                        put("gender", userData.gender.value)
                         put("password", passHash)
                         put("salt", salt)
                     }
@@ -260,7 +317,13 @@ class DBHelper(
                     put("name", userData.name)
                     put("login", userData.login)
                     put("email", userData.email)
-                    if (!userData.password.isNullOrBlank()) {
+                    put("created_at", userData.createdAt)
+                    put("updated_at", userData.updatedAt)
+                    put("birthdate_at", userData.birthdateAt)
+                    put("verified", userData.verified)
+                    put("is_admin", userData.isAdmin)
+                    put("gender", userData.gender.value)
+                    if (userData.password.isNotBlank()) {
                         val salt = PasswordHasher.generateSalt()
                         put("password", PasswordHasher.hashPassword(userData.password, salt))
                         put("salt", salt)
@@ -284,7 +347,7 @@ class DBHelper(
         val db = readableDatabase
         val cursor = db.query(
             "users",
-            arrayOf("id", "external_id", "name", "login", "email", "password", "salt"),
+            null,
             "login = ? OR email = ?",
             arrayOf(userAuthData.login, userAuthData.login),
             null, null, null
@@ -352,16 +415,36 @@ class DBHelper(
         return user
     }
 
-    fun updateUser(user: UserCreateOrUpdate, userId: Long): Int {
+    fun updateUser(user: UserUpdate, userId: Long): Int {
         val values = ContentValues().apply {
-            put("external_id", user.externalId)
-            put("name", user.name)
-            put("login", user.login)
-            put("email", user.email)
-            if (!user.password.isNullOrBlank()) {
+            if (!user.name.isNullOrEmpty()) {
+                put("name", user.name)
+            }
+            if (!user.login.isNullOrEmpty()) {
+                put("login", user.login)
+            }
+            if (!user.email.isNullOrEmpty()) {
+                put("email", user.email)
+            }
+            if (user.birthdateAt != null) {
+                val birthdateAt = if (user.birthdateAt <= TIMESTAMP_1900) { null } else { user.birthdateAt }
+                put("birthdate_at", birthdateAt)
+            }
+            if (!user.newPassword.isNullOrBlank()) {
                 val salt = PasswordHasher.generateSalt()
-                put("password", PasswordHasher.hashPassword(user.password, salt))
+                put("password", PasswordHasher.hashPassword(user.newPassword, salt))
                 put("salt", salt)
+            }
+            if (user.gender != null) {
+                put("gender", user.gender.value)
+            }
+            if (user.verified != null) {
+                val verified = if (user.verified == true) { 1 } else { 0 }
+                put("verified", verified)
+            }
+            if (user.isAdmin != null) {
+                val isAdmin = if (user.isAdmin == true) { 1 } else { 0 }
+                put("is_admin", isAdmin)
             }
         }
         val db = writableDatabase

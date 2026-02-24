@@ -3,6 +3,13 @@
     <string name="Authorization">Authorization</string>
     <string name="Registration">Registration</string>
     <string name="AddLogin">Add login</string>
+    <string name="AddNewLogin">Add new login</string>
+    <string name="AddOldPassword">Add old password</string>
+    <string name="AddNewPassword">Add new password</string>
+    <string name="InvalidPassword">Invalid password</string>
+    <string name="ChangedPassword">The new password must be different from the old</string>
+    <string name="AddValue">Add value</string>
+    <string name="AddNewValue">Add new value</string>
     <string name="AddLoginOrEmail">Add login or email</string>
     <string name="AddEmail">Add email</string>
     <string name="AddPass">Add password</string>
@@ -30,6 +37,12 @@
     <string name="user_is_verified">Verified</string>
     <string name="user_is_admin">Admin</string>
     <string name="user_name">Name</string>
+    <string name="user_birthdate">Date of birth</string>
+    <string name="AddUserBirthdate">Select the date of birth</string>
+    <string name="AddNewUserBirthdate">Select the new date of birth</string>
+    <string name="user_gender">Gender</string>
+    <string name="user_account_created">Account creation date</string>
+    <string name="SuccessfulSaving">Successful saving</string>
     <string name="UserSettings">User settings</string>
     <string name="logout">Logout</string>
     <string name="save_changes">Save changes</string>
@@ -43,6 +56,7 @@
     <string name="CreateNote">Create note</string>
     <string name="CreateMeeting">Create meeting</string>
     <string name="Profile">Profile</string>
+    <string name="UserData">User data</string>
     <string name="Settings">Settings</string>
     <string name="checking_connection">"Checking the connection to the server… "</string>
     <string name="connection_error">Failed to connect to the server. Check your internet connection and try again.</string>
@@ -58,12 +72,18 @@
     <string name="rowCreatedInfo">Created:</string>
     <string name="edit">Edit</string>
     <string name="menu">Menu</string>
+    <string name="checkConnect">Check the connection to the server</string>
+    <string name="syncUserData">Synchronize data</string>
     <string name="high_priority">Tall</string>
     <string name="normal_priority">Normal</string>
     <string name="low_priority">Low</string>
     <string name="set_priority">"Set priority "</string>
+    <string name="gender_not_selected">Not selected</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
     <string name="cancel">Cancel</string>
     <string name="Cancel">Cancel</string>
     <string name="select_priority">Choose priority</string>
     <string name="errorConnectRegistrationCheck">The server is unavailable. Log in to your account to continue working without server access.</string>
+    <string name="FakePassword">****************</string>
 </resources>

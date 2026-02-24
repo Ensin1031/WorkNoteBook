@@ -2,7 +2,14 @@ package com.example.worknotebook
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.google.gson.annotations.SerializedName
+import java.lang.reflect.Type
 
 
 /** Дата-класс, ответ аутентефикации пользователя */
@@ -45,26 +52,38 @@ data class LoginRequest(
 
 
 /** Дата-классы Пользователя */
-data class UserRegister(
-    override val name: String,
-    override val login: String,
-    override val email: String,
-    val password: String,
-) : UserBase(name, login, email)
-
 open class UserBase(
     open val name: String,
     open val login: String,
     open val email: String,
 )
 
-data class UserCreateOrUpdate(
-    val externalId: Long,
-    override val name: String,
-    override val login: String,
-    override val email: String,
-    val password: String? = null,
-) : UserBase(name, login, email)
+data class UserUpdate(
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("login") val login: String? = null,
+    @SerializedName("email") val email: String? = null,
+    @SerializedName("birthdate_at") val birthdateAt: Long? = null,
+    @SerializedName("gender") val gender: GenderType? = null,
+    @SerializedName("old_password") val oldPassword: String? = null,
+    @SerializedName("new_password") val newPassword: String? = null,
+    @SerializedName("updated_at") var updatedAt: Long? = null,
+    @SerializedName("verified") var verified: Boolean? = null,
+    @SerializedName("is_admin") var isAdmin: Boolean? = null,
+)
+
+data class UserCreate(
+    @SerializedName("external_id") val externalId: Long,
+    @SerializedName("name") val name: String,
+    @SerializedName("login") val login: String,
+    @SerializedName("email") val email: String,
+    @SerializedName("verified") val verified: Boolean,
+    @SerializedName("is_admin") val isAdmin: Boolean,
+    @SerializedName("created_at") val createdAt: Long?,
+    @SerializedName("updated_at") val updatedAt: Long?,
+    @SerializedName("birthdate_at") val birthdateAt: Long?,
+    @SerializedName("gender") val gender: GenderType,
+    @SerializedName("password") val password: String,
+)
 
 data class User(
     @SerializedName("id") val id: Long?,
@@ -72,6 +91,12 @@ data class User(
     @SerializedName("name") val name: String,
     @SerializedName("login") val login: String,
     @SerializedName("email") val email: String,
+    @SerializedName("verified") val verified: Boolean,
+    @SerializedName("is_admin") val isAdmin: Boolean,
+    @SerializedName("created_at") val createdAt: Long?,
+    @SerializedName("updated_at") val updatedAt: Long?,
+    @SerializedName("birthdate_at") val birthdateAt: Long?,
+    @SerializedName("gender") val gender: GenderType,
 )
 
 
@@ -119,7 +144,47 @@ data class Meeting(
 enum class NotePriority(val colorResId: Int, val displayNameResId: Int) {
     HIGH(R.color.redColor, R.string.high_priority),
     NORMAL(R.color.yellowColor, R.string.normal_priority),
-    LOW(R.color.greenColor, R.string.low_priority)
+    LOW(R.color.greenColor, R.string.low_priority);
+
+    companion object {
+        fun fromString(value: String?): NotePriority {
+            return entries.find { it.name == value } ?: NORMAL // дефолт NORMAL
+        }
+    }
+}
+
+
+enum class GenderType(val value: Int, val labelResId: Int) {
+    UNSET(0, R.string.gender_not_selected),
+    MALE(1, R.string.gender_male),
+    FEMALE(2, R.string.gender_female);
+
+    companion object {
+        // Получение значения по Int, дефолт UNSET
+        fun fromInt(value: Int?): GenderType {
+            return entries.find { it.value == value } ?: UNSET
+        }
+    }
+}
+
+
+class GenderTypeAdapter : JsonDeserializer<GenderType>, JsonSerializer<GenderType> {
+    override fun deserialize(
+        json: JsonElement?,
+        typeOfT: Type?,
+        context: JsonDeserializationContext?
+    ): GenderType {
+        val value = json?.asInt ?: return GenderType.UNSET
+        return GenderType.fromInt(value)
+    }
+
+    override fun serialize(
+        src: GenderType?,
+        typeOfSrc: Type?,
+        context: JsonSerializationContext?
+    ): JsonElement {
+        return JsonPrimitive(src?.value)
+    }
 }
 
 

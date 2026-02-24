@@ -149,8 +149,20 @@ class UserSessionManager(context: Context) {
     }
 
     // ===== Методы получения / проверки данных пользователя =====
-    fun getMergedUser(userData: UserCreateOrUpdate): User? {
+    fun getMergedUser(userData: UserCreate): User? {
         return dbHelper.getMergedUser(userData)
+    }
+    fun updateSessionUser(userData: UserUpdate): User? {
+        val userId = prefs.getLong(KEY_USER_ID, -1)
+        if (userId != -1L) {
+            val updated = dbHelper.updateUser(user = userData, userId = userId)
+            if (updated > 0) {
+                val user = dbHelper.getUserById(userId)
+                _currentUser.value = user
+                return user
+            }
+        }
+        return null
     }
     fun getAuthorizationVerifyUser(userAuthData: LoginRequest): User? {
         return dbHelper.getAuthorizationVerifyUser(userAuthData)
@@ -175,9 +187,9 @@ class UserSessionManager(context: Context) {
         }
     }
 
-    fun register(user: UserCreateOrUpdate, token: String?): Boolean {
+    fun register(user: UserCreate, token: String?): Boolean {
         val existing = dbHelper.getUserByLogin(user.login) ?: dbHelper.getUserByEmail(user.email)
-        if (existing != null || user.password == null) return false
+        if (existing != null) return false
         val id = dbHelper.addUser(user)
         return if (id != -1L) {
             // После регистрации нужно получить полного пользователя из БД

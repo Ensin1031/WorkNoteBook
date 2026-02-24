@@ -119,14 +119,19 @@ class RegistrationActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val createdUser = response.body()?.user
                     if (
-                        createdUser != null &&
-                        createdUser.id != null && session.register(
-                            UserCreateOrUpdate(
-                                externalId = createdUser.id,
+                        createdUser != null && session.register(
+                            UserCreate(
+                                externalId = createdUser.externalId,
                                 name = createdUser.name,
                                 login = createdUser.login,
                                 email = createdUser.email,
-                                password = userData.password
+                                password = userData.password,
+                                verified = createdUser.verified,
+                                isAdmin = createdUser.isAdmin,
+                                createdAt = createdUser.createdAt,
+                                updatedAt = createdUser.updatedAt,
+                                birthdateAt = createdUser.birthdateAt,
+                                gender = createdUser.gender
                             ),
                             token = response.body()?.accessToken
                         )) {

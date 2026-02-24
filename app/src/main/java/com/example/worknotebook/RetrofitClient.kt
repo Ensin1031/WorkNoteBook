@@ -1,6 +1,7 @@
 package com.example.worknotebook
 
 import android.content.Context
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -25,6 +26,10 @@ object RetrofitClient {
 
         val authInterceptor = AuthInterceptor(session)
 
+        val gson = GsonBuilder()
+            .registerTypeAdapter(GenderType::class.java, GenderTypeAdapter())
+            .create()
+
         val client = OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)  // Таймаут подключения
             .readTimeout(20, TimeUnit.SECONDS)  // Таймаут чтения данных
@@ -36,7 +41,7 @@ object RetrofitClient {
         retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 

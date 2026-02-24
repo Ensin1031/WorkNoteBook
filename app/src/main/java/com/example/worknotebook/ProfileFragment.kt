@@ -16,7 +16,7 @@ class ProfileFragment : Fragment() {
 
     private lateinit var session: UserSessionManager
     private lateinit var editBTN: Button
-    private lateinit var teID: EditText
+//    private lateinit var teID: EditText
     private lateinit var teName: EditText
     private lateinit var teLogin: EditText
     private lateinit var teEmail: EditText
@@ -43,7 +43,7 @@ class ProfileFragment : Fragment() {
     private fun initViews(view: View) {
 
         editBTN = view.findViewById(R.id.btn_edit_profile)
-        teID = view.findViewById(R.id.ett_user_settings_id)
+//        teID = view.findViewById(R.id.ett_user_settings_id)
         teName = view.findViewById(R.id.ett_user_settings_name)
         teLogin = view.findViewById(R.id.ett_user_settings_login)
         teEmail = view.findViewById(R.id.ett_user_settings_email)
@@ -118,8 +118,8 @@ class ProfileFragment : Fragment() {
     private fun updateUserSettingsContent(user: User) {
         editBTN.isEnabled = false
         // Заполнение данных по ID пользователя
-        teID.isEnabled = false
-        teID.setText(user.id.toString())
+//        teID.isEnabled = false
+//        teID.setText(user.id.toString())
         // Заполнение данных по ФИО пользователя
         teName.setText(user.name.trim())
         // Заполнение данных по Логину пользователя
