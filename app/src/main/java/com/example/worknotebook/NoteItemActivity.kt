@@ -34,6 +34,7 @@ class NoteItemActivity : AppCompatActivity() {
     private var syncNotesImmediately: Boolean = false
 
     private lateinit var btnMenu: ImageButton
+    private lateinit var btnAlarmSync: ImageButton
     private lateinit var btnGoToEditMode: ImageButton
     private lateinit var btnGoToBack: TextView
     private lateinit var progressBar: ProgressBar
@@ -46,12 +47,16 @@ class NoteItemActivity : AppCompatActivity() {
     private lateinit var llDateCreate: LinearLayout
     private lateinit var tvDateCreate: TextView
     private lateinit var tvDateUpdate: TextView
+    private lateinit var tvIsArchieRecord: TextView
     private lateinit var priorityMarkerUpper: View
 
     private var currentNote: Note? = null
 
     private var isViewMode = true
     private var isCreateMode = false
+
+    private var parentNote: Note? = null
+    private var parentMeeting: Meeting? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +98,7 @@ class NoteItemActivity : AppCompatActivity() {
         syncNotesImmediately = session.getUserSettings()?.syncNotesImmediately ?: false
         progressBar = findViewById(R.id.note_item_header_progress_bar)
         btnMenu = findViewById(R.id.btn_note_item_header_menu)
+        btnAlarmSync = findViewById(R.id.btn_note_alarm_sync_header)
         btnGoToEditMode = findViewById(R.id.btn_edit_note)
         btnGoToBack = findViewById(R.id.tv_note_item_header_back)
         btnSaveNote = findViewById(R.id.btn_save_note_header)
@@ -104,6 +110,7 @@ class NoteItemActivity : AppCompatActivity() {
         llDateCreate = findViewById(R.id.note_item_footer)
         tvDateCreate = findViewById(R.id.tv_note_item_create_at)
         tvDateUpdate = findViewById(R.id.tv_note_item_update_at)
+        tvIsArchieRecord = findViewById(R.id.tv_note_item_is_archive_record)
     }
     private fun setupListeners() {
         val user = session.getUser()
@@ -138,7 +145,6 @@ class NoteItemActivity : AppCompatActivity() {
                     inputNodeTitle.error = resources.getString(R.string.errorSaveNoChanged)
                     inputNodeContent.error = resources.getString(R.string.errorSaveNoChanged)
                 } else {
-                    val createdAt: Long? = if (currentNote!!.id == null) { currentNote!!.createdAt } else { null }
                     val updatedAt: Long? = if (currentNote!!.id == null) { currentNote!!.updatedAt } else { null }
                     saveNote(
                         savedNote = Note(
@@ -153,8 +159,9 @@ class NoteItemActivity : AppCompatActivity() {
                             title = title,
                             content = content,
                             priority = notePriority,
-                            createdAt = createdAt,
+                            createdAt = currentNote!!.createdAt,
                             updatedAt = updatedAt,
+                            isSync = true,
                         )
                     )
                 }
@@ -164,74 +171,64 @@ class NoteItemActivity : AppCompatActivity() {
         }
     }
     private fun navigateToNotes() {
-        val intent = Intent(this, MainSelectionActivity::class.java).apply {
-            putExtra(MainSelectionActivity.OPEN_FRAGMENT, MainSelectionActivity.FRAGMENT_NOTES)
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        if (parentNote != null) {
+            startForEdit(
+                context = this@NoteItemActivity,
+                note = parentNote!!,
+                viewMode = true
+            )
+            finish()
+        } else if (parentMeeting != null) {
+            MeetingItemActivity.startForEdit(
+                context = this@NoteItemActivity,
+                meeting = parentMeeting!!,
+                viewMode = true
+            )
+            finish()
+        } else {
+            val intent = Intent(this, MainSelectionActivity::class.java).apply {
+                putExtra(MainSelectionActivity.OPEN_FRAGMENT, MainSelectionActivity.FRAGMENT_NOTES)
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            finish()
         }
-        startActivity(intent)
-        finish()
     }
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(this, view)
+        val menu = popup.menu
+        popup.menuInflater.inflate(R.menu.item_menu, popup.menu)
         if (isCreateMode) {
-            popup.menuInflater.inflate(R.menu.create_node_item_menu, popup.menu)
+            menu.findItem(R.id.menu_item_action_sync)?.isVisible = false
+            menu.findItem(R.id.menu_item_action_delete)?.isVisible = false
+            menu.findItem(R.id.menu_item_action_recover)?.isVisible = false
         } else if (isViewMode && currentNote?.isActive != true) {
-            popup.menuInflater.inflate(R.menu.view_node_not_active_item_menu, popup.menu)
+            menu.findItem(R.id.menu_item_action_set_priority)?.isVisible = false
         } else if (isViewMode) {
-            popup.menuInflater.inflate(R.menu.view_node_item_menu, popup.menu)
-        } else if (currentNote?.isActive != true) {
-            popup.menuInflater.inflate(R.menu.update_node_not_active_item_menu, popup.menu)
-        } else {
-            popup.menuInflater.inflate(R.menu.update_node_item_menu, popup.menu)
+            menu.findItem(R.id.menu_item_action_set_priority)?.isVisible = false
+            menu.findItem(R.id.menu_item_action_recover)?.isVisible = false
+        } else if (currentNote?.isActive == true) {
+            menu.findItem(R.id.menu_item_action_recover)?.isVisible = false
         }
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                // Создание записи
-                R.id.action_set_priority_by_create -> {
+                R.id.menu_item_action_set_priority -> {
                     showPriorityDialog()
                     true
                 }
-                R.id.action_cancel_by_create -> {
-                    navigateToNotes()
-                    true
-                }
-
-                // Просмотр записи
-                R.id.action_delete_by_view -> {
-                    showConfirmDeleteDialog()
-                    true
-                }
-                R.id.action_recover_by_view -> {
-                    recoverNode()
-                    true
-                }
-                R.id.action_sync_by_view -> {
+                R.id.menu_item_action_sync -> {
                     syncNote()
                     true
                 }
-                R.id.action_cancel_by_view -> {
-                    navigateToNotes()
-                    true
-                }
-
-                // Изменение записи
-                R.id.action_set_priority_by_update -> {
-                    showPriorityDialog()
-                    true
-                }
-                R.id.action_sync_by_update -> {
-                    syncNote()
-                    true
-                }
-                R.id.action_delete_by_update -> {
+                R.id.menu_item_action_delete -> {
                     showConfirmDeleteDialog()
                     true
                 }
-                R.id.action_recover_by_update -> {
+                R.id.menu_item_action_recover -> {
                     recoverNode()
                     true
                 }
-                R.id.action_cancel_by_update -> {
+                R.id.menu_item_action_cancel -> {
                     navigateToNotes()
                     true
                 }
@@ -250,7 +247,7 @@ class NoteItemActivity : AppCompatActivity() {
             .newInstance(isActive = currentNote?.isActive?.or(false) == true)
             .show(supportFragmentManager, "DialogConfirmDelete")
     }
-    private fun setNoteIdemView(nodeData: Note) {
+    private fun setNoteItemView(nodeData: Note) {
         setNotePriority(nodeData.priority)
         inputNodeTitle.apply {
             setText(nodeData.title)
@@ -275,6 +272,7 @@ class NoteItemActivity : AppCompatActivity() {
             text = formattedUpdatedAtDate
             visibility = View.VISIBLE
         }
+        tvIsArchieRecord.visibility = if (nodeData.isActive) { View.GONE } else { View.VISIBLE }
 
         var formattedCreatedAtDate = ""
         if (nodeData.createdAt != null) {
@@ -288,25 +286,27 @@ class NoteItemActivity : AppCompatActivity() {
         if (!isViewMode) {
             btnSaveNote.visibility = View.VISIBLE
         }
-    }
-    private fun initReadMode(note: Note) {
-        setNoteIdemView(note)
-        btnGoToBack.visibility = View.VISIBLE
-        llDateCreate.visibility = View.VISIBLE
-        if (note.isActive) {
-            btnGoToEditMode.visibility = View.VISIBLE
-        } else {
-            btnGoToEditMode.visibility = View.GONE
+        btnAlarmSync.apply {
+            setOnClickListener {
+                syncNote()
+            }
+            visibility = if (isCreateMode || nodeData.isSync) { View.GONE } else { View.VISIBLE }
         }
     }
+    private fun initReadMode(note: Note) {
+        setNoteItemView(note)
+        btnGoToBack.visibility = View.VISIBLE
+        llDateCreate.visibility = View.VISIBLE
+        btnGoToEditMode.visibility = if (note.isActive) { View.VISIBLE } else { View.GONE }
+    }
     private fun initUpdateMode(note: Note) {
-        setNoteIdemView(note)
-        btnGoToEditMode.visibility = View.GONE
+        setNoteItemView(note)
+        btnGoToBack.visibility = View.GONE
         btnGoToEditMode.visibility = View.GONE
         llDateCreate.visibility = View.VISIBLE
     }
     private fun initCreateMode() {
-        btnGoToEditMode.visibility = View.GONE
+        btnGoToBack.visibility = View.GONE
         btnGoToEditMode.visibility = View.GONE
         llDateCreate.visibility = View.GONE
         val user = session.getUser()
@@ -321,15 +321,15 @@ class NoteItemActivity : AppCompatActivity() {
                 priority = NotePriority.NORMAL,
                 id = null,
                 userId = user.id,
-                parentNoteId = null,
-                meetingId = null,
+                parentNoteId = parentNote?.id,
+                meetingId = parentMeeting?.id,
                 externalId = null,
                 externalUserId = user.externalId,
-                externalParentNoteId = null,
-                externalMeetingId = null
+                externalParentNoteId = parentNote?.externalId,
+                externalMeetingId = parentMeeting?.externalId
             )
             currentNote = newNote
-            setNoteIdemView(newNote)
+            setNoteItemView(newNote)
         } else {
             logout()
         }
@@ -351,19 +351,48 @@ class NoteItemActivity : AppCompatActivity() {
             isViewMode = intent.getBooleanExtra(NEED_VIEW_MODE, true)
         }
         when {
-            // Передан ID заметки - загружаем с сервера
+            intent.hasExtra(EXTRA_PARENT_NOTE_DATA_ID) -> {
+                val parentNoteId = intent.getIntExtra(EXTRA_PARENT_MEETING_DATA_ID, -1)
+                if (parentNoteId != -1) {
+                    parentNote = session.getNoteById(noteId = parentNoteId.toLong())
+                }
+            }
+            intent.hasExtra(EXTRA_PARENT_NOTE_DATA) -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    parentNote = intent.getParcelableExtra(EXTRA_PARENT_NOTE_DATA, Note::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    parentNote = intent.getParcelableExtra(EXTRA_PARENT_NOTE_DATA) as? Note
+                }
+            }
+        }
+        when {
+            intent.hasExtra(EXTRA_PARENT_MEETING_DATA_ID) -> {
+                val parentMeetingId = intent.getIntExtra(EXTRA_PARENT_MEETING_DATA_ID, -1)
+                if (parentMeetingId != -1) {
+                    parentMeeting = session.getMeetingById(meetingId = parentMeetingId.toLong())
+                }
+            }
+            intent.hasExtra(EXTRA_PARENT_MEETING_DATA) -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    parentMeeting = intent.getParcelableExtra(EXTRA_PARENT_MEETING_DATA, Meeting::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    parentMeeting = intent.getParcelableExtra(EXTRA_PARENT_MEETING_DATA) as? Meeting
+                }
+                Log.d("DEBUG", "=========== determineMode parentMeeting: $parentMeeting")
+            }
+        }
+        Log.d("DEBUG", "=========== determineMode HAS: ${intent.hasExtra(EXTRA_PARENT_MEETING_DATA)}; HAS_ID: ${intent.hasExtra(EXTRA_PARENT_MEETING_DATA_ID)} parentMeeting: $parentMeeting")
+        when {
+            // Передан ID заметки - загружаем из БД
             intent.hasExtra(EXTRA_NOTE_ID) -> {
                 isCreateMode = false
                 val noteId = intent.getIntExtra(EXTRA_NOTE_ID, -1)
                 if (noteId != -1) {
                     val note: Note? = session.getNoteById(noteId = noteId.toLong())
                     if (note == null) {
-                        Log.d(
-                            "STRUCTURE_ERROR",
-                            "-----===== Ошибка. Попытка открыть не существующий " +
-                                    "объект заметки пользователя.\n" +
-                                    "Данные: noteId = $noteId =====-----"
-                        )
+                        Log.d("STRUCTURE_ERROR", "-----===== Ошибка. Попытка открыть не существующий объект заметки пользователя.\nДанные: noteId = $noteId =====-----")
                         error("Системная ошибка")
                     } else {
                         currentNote = note
@@ -387,11 +416,7 @@ class NoteItemActivity : AppCompatActivity() {
                 }
 
                 if (note == null) {
-                    Log.d(
-                        "STRUCTURE_ERROR",
-                        "-----===== Ошибка. Попытка открыть не существующий " +
-                                "объект заметки пользователя. =====-----"
-                    )
+                    Log.d("STRUCTURE_ERROR", "-----===== Ошибка. Попытка открыть не существующий объект заметки пользователя. =====-----")
                     error("Системная ошибка")
                 } else {
                     currentNote = note
@@ -415,30 +440,62 @@ class NoteItemActivity : AppCompatActivity() {
         const val EXTRA_NOTE_DATA = "extra_note_data"
         const val NEED_VIEW_MODE = "view_mode"
 
-        fun startForCreate(context: Context) {
+        const val EXTRA_PARENT_NOTE_DATA = "extra_parent_note_data"
+        const val EXTRA_PARENT_NOTE_DATA_ID = "extra_parent_note_data_id"
+        const val EXTRA_PARENT_MEETING_DATA = "extra_parent_meeting_data"
+        const val EXTRA_PARENT_MEETING_DATA_ID = "extra_parent_meeting_data_id"
+
+        fun startForCreate(context: Context, parentNote: Meeting? = null, parentMeeting: Meeting? = null, parentNoteId: Int? = null, parentMeetingId: Int? = null) {
             val intent = Intent(context, NoteItemActivity::class.java)
             intent.putExtra(NEED_VIEW_MODE, false)
+            if (parentNote != null) {
+                intent.putExtra(EXTRA_PARENT_NOTE_DATA, parentNote)
+            } else if (parentNoteId != null) {
+                intent.putExtra(EXTRA_PARENT_NOTE_DATA_ID, parentNoteId)
+            }
+            if (parentMeeting != null) {
+                intent.putExtra(EXTRA_PARENT_MEETING_DATA, parentMeeting)
+            } else if (parentMeetingId != null) {
+                intent.putExtra(EXTRA_PARENT_MEETING_DATA_ID, parentMeetingId)
+            }
             context.startActivity(intent)
         }
-        fun startForEdit(context: Context, noteId: Int, viewMode: Boolean = true) {
+        fun startForEdit(context: Context, noteId: Int, viewMode: Boolean = true, parentNote: Note? = null, parentMeeting: Meeting? = null, parentNoteId: Int? = null, parentMeetingId: Int? = null) {
             val intent = Intent(context, NoteItemActivity::class.java)
             intent.putExtra(EXTRA_NOTE_ID, noteId)
             intent.putExtra(NEED_VIEW_MODE, viewMode)
+            if (parentNote != null) {
+                intent.putExtra(EXTRA_PARENT_NOTE_DATA, parentNote)
+            } else if (parentNoteId != null) {
+                intent.putExtra(EXTRA_PARENT_NOTE_DATA_ID, parentNoteId)
+            }
+            if (parentMeeting != null) {
+                intent.putExtra(EXTRA_PARENT_MEETING_DATA, parentMeeting)
+            } else if (parentMeetingId != null) {
+                intent.putExtra(EXTRA_PARENT_MEETING_DATA_ID, parentMeetingId)
+            }
             context.startActivity(intent)
         }
-        fun startForEdit(context: Context, note: Note, viewMode: Boolean = true) {
+        fun startForEdit(context: Context, note: Note, viewMode: Boolean = true, parentNote: Note? = null, parentMeeting: Meeting? = null, parentNoteId: Int? = null, parentMeetingId: Int? = null) {
             val intent = Intent(context, NoteItemActivity::class.java)
             intent.putExtra(EXTRA_NOTE_DATA, note)
             intent.putExtra(NEED_VIEW_MODE, viewMode)
+            if (parentNote != null) {
+                intent.putExtra(EXTRA_PARENT_NOTE_DATA, parentNote)
+            } else if (parentNoteId != null) {
+                intent.putExtra(EXTRA_PARENT_NOTE_DATA_ID, parentNoteId)
+            }
+            if (parentMeeting != null) {
+                intent.putExtra(EXTRA_PARENT_MEETING_DATA, parentMeeting)
+            } else if (parentMeetingId != null) {
+                intent.putExtra(EXTRA_PARENT_MEETING_DATA_ID, parentMeetingId)
+            }
             context.startActivity(intent)
         }
     }
     private fun recoverNode() {
         if (currentNote?.id == null) {
-            Log.d(
-                "STRUCTURE_ERROR",
-                "-----===== Ошибка. Попытка синхронизировать несуществующую заметку =====-----"
-            )
+            Log.d("STRUCTURE_ERROR", "-----===== Ошибка. Попытка синхронизировать несуществующую заметку =====-----")
             error("Системная ошибка")
         }
 
@@ -456,6 +513,7 @@ class NoteItemActivity : AppCompatActivity() {
         startViewProcess()
         val recoveredNote: Note = currentNote!!.copy(
             isActive = true,
+            isSync = false,
             updatedAt = System.currentTimeMillis()
         )
         if (syncNotesImmediately) {
@@ -480,6 +538,7 @@ class NoteItemActivity : AppCompatActivity() {
                                 updatedAt = noteData.updatedAt,
                                 priority = noteData.priority,
                                 isActive = noteData.isActive,
+                                isSync = true,
                             )
                             endLocalProcess(note = syncNote)
                         } else {
@@ -521,8 +580,8 @@ class NoteItemActivity : AppCompatActivity() {
             error("Системная ошибка")
         }
 
-        fun delEndLocal(note: Note) {
-            session.deleteNote(noteId = note.id!!, archive = true)
+        fun delEndLocal(note: Note,) {
+            session.deleteNote(noteId = note.id!!, archive = true, isSync = true)
             endViewProcess()
             if (isViewMode) {
                 initReadMode(note = note)
@@ -556,6 +615,7 @@ class NoteItemActivity : AppCompatActivity() {
                             updatedAt = noteData.updatedAt,
                             priority = noteData.priority,
                             isActive = noteData.isActive,
+                            isSync = true,
                         )
                         session.updateNote(note)
                         currentNote = note
@@ -612,11 +672,17 @@ class NoteItemActivity : AppCompatActivity() {
         startViewProcess()
         val noteId = currentNote!!.id!!
 
-        fun delEndLocal(id: Long) {
-            session.deleteNote(noteId = id, archive = archive)
+        fun delEndLocal(id: Long, isSync: Boolean) {
+            session.deleteNote(noteId = id, archive = archive, isSync = isSync)
             endViewProcess()
             if (archive) {
-                startForEdit(context = this@NoteItemActivity, noteId = id.toInt(), viewMode = true)
+                startForEdit(
+                    context = this@NoteItemActivity,
+                    noteId = id.toInt(),
+                    viewMode = true,
+                    parentNote = parentNote,
+                    parentMeeting = parentMeeting
+                )
             } else {
                 navigateToNotes()
             }
@@ -631,11 +697,12 @@ class NoteItemActivity : AppCompatActivity() {
                         syncNote(andInArchive = true)
                     } else if (currentNote!!.externalId == null) {
                         // в этой ситуации - просто удалим локально полностью
-                        delEndLocal(id = noteId)
+                        delEndLocal(id = noteId, isSync = false)
                     } else {
                         // пробуем удалить на бэке, и в любом случае удаляем локально
-                        RetrofitClient.api.deleteNote(noteId = currentNote!!.externalId!!.toInt())
-                        delEndLocal(id = noteId)
+                        val response = RetrofitClient.api.deleteNote(noteId = currentNote!!.externalId!!.toInt())
+                        val isSync: Boolean = response.isSuccessful
+                        delEndLocal(id = noteId, isSync = isSync)
                     }
                 } catch (e: Exception) {
                     AlertDialog.Builder(this@NoteItemActivity)
@@ -648,7 +715,7 @@ class NoteItemActivity : AppCompatActivity() {
                 }
             }
         } else {
-            delEndLocal(id = noteId)
+            delEndLocal(id = noteId, isSync = false)
         }
     }
     private fun saveNote(savedNote: Note) {
@@ -677,7 +744,8 @@ class NoteItemActivity : AppCompatActivity() {
                                 content = savedNote.content,
                                 createdAt = noteData.createdAt,
                                 updatedAt = noteData.updatedAt,
-                                priority = noteData.priority
+                                priority = noteData.priority,
+                                isSync = true,
                             )
                             if (noteId == null) {
                                 noteId = session.addNote(note)
@@ -690,7 +758,13 @@ class NoteItemActivity : AppCompatActivity() {
                                 Toast.LENGTH_SHORT
                             ).show()
                             endViewProcess()
-                            startForEdit(context = this@NoteItemActivity, noteId = noteId.toInt(), viewMode = true)
+                            startForEdit(
+                                context = this@NoteItemActivity,
+                                noteId = noteId.toInt(),
+                                viewMode = true,
+                                parentNote = parentNote,
+                                parentMeeting = parentMeeting
+                            )
                         } else {
                             Toast.makeText(
                                 this@NoteItemActivity,
@@ -719,6 +793,7 @@ class NoteItemActivity : AppCompatActivity() {
             }
         } else {
             var noteId: Long
+            savedNote.isSync = false
             if (savedNote.id == null) {
                 noteId = session.addNote(savedNote)
             } else {
@@ -732,7 +807,13 @@ class NoteItemActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
             endViewProcess()
-            startForEdit(context = this@NoteItemActivity, noteId = noteId.toInt(), viewMode = true)
+            startForEdit(
+                context = this@NoteItemActivity,
+                noteId = noteId.toInt(),
+                viewMode = true,
+                parentNote = parentNote,
+                parentMeeting = parentMeeting
+            )
         }
     }
     private fun startViewProcess() {

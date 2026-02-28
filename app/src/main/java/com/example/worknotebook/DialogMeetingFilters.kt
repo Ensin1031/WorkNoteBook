@@ -1,13 +1,24 @@
 package com.example.worknotebook
 
 import android.app.Dialog
+import android.content.res.ColorStateList
+import android.icu.util.Calendar
+import android.icu.util.TimeZone
 import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
 import android.widget.Button
+import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.switchmaterial.SwitchMaterial
+import java.time.Instant
+import java.time.ZoneId
 import kotlin.getValue
 
 
@@ -16,20 +27,15 @@ class DialogMeetingFilters() : DialogFragment() {
     private val sharedViewModel: MainSharedViewModel by activityViewModels()
     private lateinit var initialFilters: MeetingFilters
 
+    private var footerBTNContainer: LinearLayout? = null
     private var btnCancel: Button? = null
     private var btnOk: Button? = null
 
-    private var search: EditText? = null
-    private var byMeetingAtDesc: SwitchMaterial? = null
-    private var byMeetingAtAsc: SwitchMaterial? = null
-    private var byUpdatedAtDesc: SwitchMaterial? = null
-    private var byUpdatedAtAsc: SwitchMaterial? = null
-    private var byActiveDesc: SwitchMaterial? = null
-    private var byActiveAsc: SwitchMaterial? = null
+    private var scrollContainer: ScrollView? = null
+    private var ettGoToDate: EditText? = null
+    private var datePickerGoToDate: DatePicker? = null
     private var viewOnlyActive: SwitchMaterial? = null
     private var viewOnlyNotActive: SwitchMaterial? = null
-    private var bySyncByBackDesc: SwitchMaterial? = null
-    private var bySyncByBackAsc: SwitchMaterial? = null
     private var viewOnlySyncByBack: SwitchMaterial? = null
     private var viewOnlyNotSyncByBack: SwitchMaterial? = null
 
@@ -72,67 +78,61 @@ class DialogMeetingFilters() : DialogFragment() {
 
         val resultFilters: MeetingFilters = initialFilters.copy()
 
-        search?.apply { setText(initialFilters.search) }
-        byMeetingAtDesc?.setOnCheckedChangeListener(null)
-        byMeetingAtDesc?.apply {
-            isChecked = initialFilters.byMeetingAtDesc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.byMeetingAtDesc = isChecked
-                if (isChecked) {
-                    byMeetingAtAsc?.isChecked = false
+        ettGoToDate?.apply {
+            setText(if (resultFilters.goToDate != null) { formatMeetingDate(resultFilters.goToDate!!) } else { "" })
+            if (resultFilters.goToDate != null) {
+                ettGoToDate!!.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_close_red, 0)
+                ettGoToDate!!.compoundDrawableTintList = ColorStateList.valueOf(ContextCompat.getColor(ettGoToDate!!.context, R.color.redColor))
+            }
+            setOnTouchListener { view, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    val editText = view as EditText
+                    val drawableEnd = editText.compoundDrawablesRelative[2] // индекс 2 — правая иконка
+                    if (drawableEnd != null) {
+                        // Определяем, попал ли клик в область иконки (правый край)
+                        val isClickOnEndIcon = event.x >= editText.width - editText.totalPaddingRight
+                        if (isClickOnEndIcon) {
+                            editText.text = null
+                            resultFilters.goToDate = null
+                            ettGoToDate!!.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0)
+                            ettGoToDate!!.compoundDrawableTintList = null
+                            return@setOnTouchListener true
+                        }
+                    }
+                }
+                false
+            }
+            setOnClickListener {
+                if (datePickerGoToDate != null) {
+                    ettGoToDate!!.visibility = View.GONE
+                    datePickerGoToDate!!.visibility = View.VISIBLE
+                    footerBTNContainer?.visibility = View.GONE
+                    scrollContainer?.visibility = View.GONE
+                    val calendar = Calendar.getInstance()
+                    val (year, month, day) = if (resultFilters.goToDate != null) {
+                        val localDate = Instant.ofEpochMilli(resultFilters.goToDate!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                        Triple(localDate.year, localDate.monthValue - 1, localDate.dayOfMonth)
+                    } else {
+                        Triple(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+                    }
+                    datePickerGoToDate!!.init(year, month, day) { _, y, m, d ->
+                        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                        cal.set(y, m, d, 0, 0, 0)
+                        cal.set(Calendar.MILLISECOND, 0)
+                        val ts = cal.timeInMillis
+                        resultFilters.goToDate = ts
+                        ettGoToDate!!.setText(formatMeetingDate(ts))
+                        ettGoToDate!!.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_close_red, 0)
+                        ettGoToDate!!.compoundDrawableTintList = ColorStateList.valueOf(ContextCompat.getColor(ettGoToDate!!.context, R.color.redColor))
+                        ettGoToDate!!.visibility = View.VISIBLE
+                        datePickerGoToDate!!.visibility = View.GONE
+                        footerBTNContainer?.visibility = View.VISIBLE
+                        scrollContainer?.visibility = View.VISIBLE
+                    }
                 }
             }
         }
-        byMeetingAtAsc?.setOnCheckedChangeListener(null)
-        byMeetingAtAsc?.apply {
-            isChecked = initialFilters.byMeetingAtAsc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.byMeetingAtAsc = isChecked
-                if (isChecked) {
-                    byMeetingAtDesc?.isChecked = false
-                }
-            }
-        }
-        byUpdatedAtDesc?.setOnCheckedChangeListener(null)
-        byUpdatedAtDesc?.apply {
-            isChecked = initialFilters.byUpdatedAtDesc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.byUpdatedAtDesc = isChecked
-                if (isChecked) {
-                    byUpdatedAtAsc?.isChecked = false
-                }
-            }
-        }
-        byUpdatedAtAsc?.setOnCheckedChangeListener(null)
-        byUpdatedAtAsc?.apply {
-            isChecked = initialFilters.byUpdatedAtAsc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.byUpdatedAtAsc = isChecked
-                if (isChecked) {
-                    byUpdatedAtDesc?.isChecked = false
-                }
-            }
-        }
-        byActiveDesc?.setOnCheckedChangeListener(null)
-        byActiveDesc?.apply {
-            isChecked = initialFilters.byActiveDesc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.byActiveDesc = isChecked
-                if (isChecked) {
-                    byActiveAsc?.isChecked = false
-                }
-            }
-        }
-        byActiveAsc?.setOnCheckedChangeListener(null)
-        byActiveAsc?.apply {
-            isChecked = initialFilters.byActiveAsc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.byActiveAsc = isChecked
-                if (isChecked) {
-                    byActiveDesc?.isChecked = false
-                }
-            }
-        }
+
         viewOnlyActive?.setOnCheckedChangeListener(null)
         viewOnlyActive?.apply {
             isChecked = initialFilters.viewOnlyActive
@@ -145,26 +145,6 @@ class DialogMeetingFilters() : DialogFragment() {
             isChecked = initialFilters.viewOnlyNotActive
             setOnCheckedChangeListener { _, isChecked ->
                 resultFilters.viewOnlyNotActive = isChecked
-            }
-        }
-        bySyncByBackDesc?.setOnCheckedChangeListener(null)
-        bySyncByBackDesc?.apply {
-            isChecked = initialFilters.bySyncByBackDesc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.bySyncByBackDesc = isChecked
-                if (isChecked) {
-                    bySyncByBackAsc?.isChecked = false
-                }
-            }
-        }
-        bySyncByBackAsc?.setOnCheckedChangeListener(null)
-        bySyncByBackAsc?.apply {
-            isChecked = initialFilters.bySyncByBackAsc
-            setOnCheckedChangeListener { _, isChecked ->
-                resultFilters.bySyncByBackAsc = isChecked
-                if (isChecked) {
-                    bySyncByBackDesc?.isChecked = false
-                }
             }
         }
         viewOnlySyncByBack?.setOnCheckedChangeListener(null)
@@ -186,26 +166,21 @@ class DialogMeetingFilters() : DialogFragment() {
             dismiss()
         }
         btnOk?.setOnClickListener {
-            resultFilters.search = search?.text.toString().trim()
             sharedViewModel.setMeetingFilters(resultFilters)
             dismiss()
         }
     }
     private fun initViews(dialog: AlertDialog) {
+        footerBTNContainer = dialog.findViewById(R.id.ll_meetings_filters_btn_container)
         btnCancel = dialog.findViewById(R.id.btn_meetings_filters_cancel)
         btnOk = dialog.findViewById(R.id.btn_meetings_filters_apply)
+        scrollContainer = dialog.findViewById(R.id.sc_meetings_filter_scroll_container)
 
-        search = dialog.findViewById(R.id.ett_meetings_filter_search)
-        byMeetingAtDesc = dialog.findViewById(R.id.sw_meetings_filter_by_meeting_at_desc)
-        byMeetingAtAsc = dialog.findViewById(R.id.sw_meetings_filter_by_meeting_at_asc)
-        byUpdatedAtDesc = dialog.findViewById(R.id.sw_meetings_filter_by_updated_at_desc)
-        byUpdatedAtAsc = dialog.findViewById(R.id.sw_meetings_filter_by_updated_at_asc)
-        byActiveDesc = dialog.findViewById(R.id.sw_meetings_filter_by_active_desc)
-        byActiveAsc = dialog.findViewById(R.id.sw_meetings_filter_by_active_asc)
+        ettGoToDate = dialog.findViewById(R.id.ett_meetings_filter_go_to_date)
+        datePickerGoToDate = dialog.findViewById(R.id.dp_meetings_filter_go_to_date)
+
         viewOnlyActive = dialog.findViewById(R.id.sw_meetings_filter_view_active)
         viewOnlyNotActive = dialog.findViewById(R.id.sw_meetings_filter_view_not_active)
-        bySyncByBackDesc = dialog.findViewById(R.id.sw_meetings_filter_by_sync_desc)
-        bySyncByBackAsc = dialog.findViewById(R.id.sw_meetings_filter_by_sync_asc)
         viewOnlySyncByBack = dialog.findViewById(R.id.sw_meetings_filter_view_sync_by_back)
         viewOnlyNotSyncByBack = dialog.findViewById(R.id.sw_meetings_filter_view_not_sync_by_back)
     }

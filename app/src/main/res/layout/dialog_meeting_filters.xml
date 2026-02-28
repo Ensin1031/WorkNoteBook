@@ -20,23 +20,39 @@
         android:layout_marginBottom="10dp"
         android:padding="0dp">
         <EditText
-            android:id="@+id/ett_meetings_filter_search"
+            android:id="@+id/ett_meetings_filter_go_to_date"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:autofillHints=""
             android:ems="10"
             android:fontFamily="@font/inter"
-            android:inputType="text"
+            android:inputType="date"
             android:textColor="@color/textColor"
             android:background="@drawable/bg_edit_text"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:padding="7dp"
             android:textColorHint="@color/textLight"
-            android:hint="@string/Search" />
+            android:maxLines="1"
+            android:hint="@string/GoToDate"
+            android:focusable="false"
+            android:cursorVisible="false"
+            android:clickable="true"
+            android:drawableEnd="@drawable/ic_calendar"
+            android:drawableTint="@color/grayBackColor"
+            android:paddingEnd="10dp" />
+        <DatePicker
+            android:id="@+id/dp_meetings_filter_go_to_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:calendarViewShown="false"
+            android:spinnersShown="true"
+            android:visibility="gone"/>
     </LinearLayout>
 
     <ScrollView
+        android:id="@+id/sc_meetings_filter_scroll_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -46,190 +62,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <!-- Сортировать по дате встречи, по убыванию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp"
-                tools:ignore="UselessParent">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupByMeetingAtDescendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_meeting_at_desc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по дате встречи, по возрастанию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp"
-                tools:ignore="UselessParent">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupByMeetingAtAscendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_meeting_at_asc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по дате изменения, по убыванию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp"
-                tools:ignore="UselessParent">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupByUpdatedAtDescendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_updated_at_desc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по дате изменения, по возрастанию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp"
-                tools:ignore="UselessParent">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupByUpdatedAtAscendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_updated_at_asc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по активности, по убыванию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupByActiveDescendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_active_desc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по активности, по возрастанию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupByActiveAscendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_active_asc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
 
             <!-- Фильтр, показывать активные -->
             <LinearLayout
@@ -284,66 +116,6 @@
                     tools:ignore="RtlSymmetry" />
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/sw_meetings_filter_view_not_active"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по сохранению в облаке, по убыванию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupBySyncDescendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_sync_desc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="15dp"
-                    app:trackTint="@color/switch_track_selector"
-                    app:thumbTint="@color/switch_thumb_selector" />
-            </LinearLayout>
-
-            <!-- Сортировать по сохранению в облаке, по возрастанию -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_edit_text_disabled"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="0dp">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:minWidth="120dp"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="14dp"
-                    android:text="@string/groupBySyncAscendingOrder"
-                    android:textColor="@color/textColor"
-                    android:textSize="14sp"
-                    tools:ignore="RtlSymmetry" />
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/sw_meetings_filter_by_sync_asc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="15dp"
@@ -418,6 +190,7 @@
 
     <!-- Buttons -->
     <LinearLayout
+        android:id="@+id/ll_meetings_filters_btn_container"
         style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

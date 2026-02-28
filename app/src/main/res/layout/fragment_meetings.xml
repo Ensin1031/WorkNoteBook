@@ -6,265 +6,46 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/page_meetings_list_container"
+    android:padding="10dp"
     tools:context=".MeetingsFragment">
 
-    <ScrollView
-        android:id="@+id/scroll_container"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_page_meetings_list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0">
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:clipToPadding="false" />
 
-        <LinearLayout
-            android:id="@+id/page_meetings_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/lightLightGray"
-            android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="10dp"
-                android:fontFamily="@font/inter_bold"
-                android:text="@string/UserMeetings"
-                android:textColor="@color/textColor"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-    </ScrollView>
+<!--    <TextView-->  <!--TODO убрать, если не понадобиться-->
+<!--        android:id="@+id/rv_page_meetings_list_is_empty"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:layout_marginVertical="10dp"-->
+<!--        android:fontFamily="@font/inter_bold"-->
+<!--        android:text="@string/ListIsEmpty"-->
+<!--        android:textColor="@color/textColor"-->
+<!--        android:textSize="25sp"-->
+<!--        android:textStyle="bold"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        android:visibility="gone" />-->
 
     <ImageButton
         android:id="@+id/btn_add_meetings"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/bg_rectangle_button"
-        android:contentDescription="@string/CreateNote"
+        android:contentDescription="@string/CreateMeeting"
         android:layout_margin="20dp"
         android:elevation="6dp"
         android:src="@drawable/ic_plus"
         app:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

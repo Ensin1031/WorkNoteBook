@@ -12,8 +12,8 @@
     android:title="@string/Meetings" />
 
 <item
-    android:id="@+id/nav_profile"
-    android:icon="@drawable/ic_user"
+    android:id="@+id/nav_calendar"
+    android:icon="@drawable/ic_calendar"
     android:title="Календарь" />
 
     <item

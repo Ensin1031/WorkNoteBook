@@ -23,6 +23,8 @@
     <color name="lightLightGray">#EEEEEE</color>
     <color name="lightLightGrayBack">#E5E5E5</color>
     <color name="textColor">#222222</color>
+    <color name="textColor_50">#80222222</color>
+    <color name="textColor_20">#33222222</color>
     <color name="textColor_10">#1A222222</color>
     <color name="textLight">#878787</color>
     <color name="disabledBTNColor">#808080</color>

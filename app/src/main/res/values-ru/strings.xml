@@ -27,6 +27,7 @@
     <string name="Error">Ошибка</string>
     <string name="errorNodeEmptySave">Для сохранения заполните любое из полей</string>
     <string name="errorSaveNoChanged">Отсутствуют изменения для сохранения</string>
+    <string name="errorMeetingEndMoreStart">Окончание события должно быть позже начала</string>
     <string name="LoginSuccessful">Успешный вход</string>
     <string name="LoginLocal">Войти локально</string>
     <string name="LoginUserNotFound">Неверный логин или пароль</string>
@@ -44,7 +45,16 @@
     <string name="user_birthdate">Дата рождения</string>
     <string name="AddUserBirthdate">Выберите дату рождения</string>
     <string name="AddNewUserBirthdate">Выберите новую дату рождения</string>
+    <string name="AddDate">Выберите дату</string>
+    <string name="GoToDate">Перейти к дате</string>
+    <string name="StartDate">Дата начала</string>
+    <string name="EndDate">Дата окончания</string>
+    <string name="AddTime">Выберите время</string>
+    <string name="StartTime">Время начала</string>
+    <string name="EndTime">Время окончания</string>
+    <string name="NoMeetings">Запланированные события отсутствуют</string>
     <string name="user_gender">Пол</string>
+    <string name="MeetingNotes">Заметки встречи</string>
     <string name="syncMeetingsImmediatelyHint">Синхронизировать встречи сразу при создании или редактировании</string>
     <string name="syncNotesImmediatelyHint">Синхронизировать заметки сразу при создании или редактировании</string>
     <string name="groupByPriorityDescendingOrder">Сортировать по приоритетам, по убыванию</string>
@@ -65,6 +75,7 @@
     <string name="FilterViewOnlySyncByBack">Фильтр, показывать только синхронизированные</string>
     <string name="FilterViewOnlyNotSyncByBack">Фильтр, показывать только не синхронизированные</string>
     <string name="Search">Поиск</string>
+    <string name="ArchiveRecord">Архивная запись</string>
     <string name="SearchMustContain">Должны содержать</string>
     <string name="user_account_created">Дата создания аккаунта</string>
     <string name="SuccessfulSaving">Успешное сохранение</string>
@@ -81,6 +92,7 @@
     <string name="goToNext">Вперед</string>
     <string name="CreateNote">Создать заметку</string>
     <string name="CreateMeeting">Создать встречу</string>
+    <string name="ListIsEmpty">Список пуст</string>
     <string name="Profile">Профиль</string>
     <string name="UserData">Данные пользователя</string>
     <string name="Settings">Настройки</string>
@@ -89,9 +101,15 @@
     <string name="retry">Повторить</string>
     <string name="exit">Выход</string>
     <string name="note_title">Заголовок заметки</string>
+    <string name="meeting_title">Заголовок встречи</string>
+    <string name="meeting_location">Место встречи</string>
     <string name="note_content">Текст заметки</string>
+    <string name="meeting_description">Описание встречи</string>
     <string name="enter_note_title">Введите заголовок…</string>
+    <string name="enter_meeting_title">Введите заголовок встречи…</string>
+    <string name="enter_meeting_location">Введите место встречи…</string>
     <string name="enter_note_content">Введите текст заметки…</string>
+    <string name="enter_meeting_description">Введите описание встречи…</string>
     <string name="Sync">Синхронизировать</string>
     <string name="save">Сохранить</string>
     <string name="recover">Восстановить</string>
@@ -107,6 +125,8 @@
     <string name="filters">Фильтры</string>
     <string name="checkConnect">Проверить подключение к серверу</string>
     <string name="syncUserData">Синхронизировать данные</string>
+    <string name="syncNotes">Синхронизировать заметки</string>
+    <string name="syncMeetings">Синхронизировать данные</string>
     <string name="set_priority">Установить приоритет</string>
     <string name="select_priority">Выберите приоритет</string>
     <string name="high_priority">Высокий</string>

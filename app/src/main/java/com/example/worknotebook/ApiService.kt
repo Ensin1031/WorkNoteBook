@@ -88,11 +88,14 @@ interface ApiService {
     suspend fun getMeetings(): Response<Meeting>
 
     @POST(ApiRoutes.MEETINGS)
-    suspend fun createMeeting(@Body request: Meeting): Response<Meeting>
+    suspend fun createOrSyncMeeting(@Body request: SyncMeeting): Response<SyncMeeting>
 
     @PATCH("${ApiRoutes.MEETINGS}{meeting_id}/")
     suspend fun updateMeeting(@Path("meeting_id") meetingId: Int, @Body request: Meeting): Response<Meeting>
 
     @DELETE("${ApiRoutes.MEETINGS}{meeting_id}/")
-    suspend fun deleteMeeting(@Path("meeting_id") meetingId: Int): Response<Unit>
+    suspend fun deleteMeeting(
+        @Path("meeting_id") meetingId: Int,
+        @Query("archive") archive: Boolean = false
+    ): Response<Unit>
 }

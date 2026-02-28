@@ -219,9 +219,9 @@ class UserSessionManager private constructor(context: Context) {
     }
 
     // ===== Методы для работы с заметками текущего пользователя =====
-    fun getNotes(filters: NodeFilters): List<Note> {
+    fun getNotes(filters: NodeFilters, parentNoteId: Long? = null, meetingId: Long? = null): List<Note> {
         val userId = currentUserInternal?.id ?: return emptyList()
-        return dbHelper.getNotesByUser(userId = userId, filters = filters)
+        return dbHelper.getNotesByUser(userId = userId, filters = filters, parentNoteId = parentNoteId, meetingId = meetingId)
     }
 
     fun addNote(note: Note): Long {
@@ -232,8 +232,8 @@ class UserSessionManager private constructor(context: Context) {
         return dbHelper.updateNote(note)
     }
 
-    fun deleteNote(noteId: Long, archive: Boolean): Int {
-        return dbHelper.deleteNote(id = noteId, archive = archive)
+    fun deleteNote(noteId: Long, archive: Boolean, isSync: Boolean): Int {
+        return dbHelper.deleteNote(id = noteId, archive = archive, isSync = isSync)
     }
 
     fun getNoteById(noteId: Long): Note? {
@@ -246,6 +246,11 @@ class UserSessionManager private constructor(context: Context) {
         return dbHelper.getMeetingsByUser(userId = userId, filters = filters)
     }
 
+    fun getMeetingsInDateRange(start: Long, end: Long, filters: MeetingFilters): List<Meeting> {
+        val userId = currentUserInternal?.id ?: return emptyList()
+        return dbHelper.getMeetingsInDateRange(userId = userId, start = start, end = end, filters = filters)
+    }
+
     fun addMeeting(meeting: Meeting): Long {
         return dbHelper.addMeeting(meeting)
     }
@@ -254,8 +259,8 @@ class UserSessionManager private constructor(context: Context) {
         return dbHelper.updateMeeting(meeting)
     }
 
-    fun deleteMeeting(meetingId: Long, archive: Boolean): Int {
-        return dbHelper.deleteMeeting(id = meetingId, archive = archive)
+    fun deleteMeeting(meetingId: Long, archive: Boolean, isSync: Boolean): Int {
+        return dbHelper.deleteMeeting(id = meetingId, archive = archive, isSync = isSync)
     }
 
     fun getMeetingById(meetingId: Long): Meeting? {
