@@ -3,8 +3,6 @@ package com.example.worknotebook
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.core.content.edit
 import org.json.JSONObject
 
@@ -26,7 +24,8 @@ object JwtUtils {
 
             val externalId = json.optLong("user_id", 0L)
 
-            (now >= exp) && (externalId == userExternalId)
+            (externalId != userExternalId) || (now >= exp)
+
         } catch (e: Exception) {
             true
         }
@@ -34,7 +33,7 @@ object JwtUtils {
 }
 
 
-class UserSessionManager(context: Context) {
+class UserSessionManager private constructor(context: Context) {
 
     private val dbHelper: DBHelper = DBHelper(context)
     private val prefs: SharedPreferences = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
@@ -54,8 +53,8 @@ class UserSessionManager(context: Context) {
         }
     }
 
-    private val _currentUser = MutableLiveData<User?>()
-    val currentUser: LiveData<User?> = _currentUser
+    @Volatile
+    private var currentUserInternal: User? = null
 
     init {
         loadUserAndTokenFromPrefs()
@@ -70,7 +69,7 @@ class UserSessionManager(context: Context) {
         if (userId != -1L) {
             val user = dbHelper.getUserById(userId)
             if (user != null) {
-                _currentUser.value = user
+                currentUserInternal = user
                 // Проверяем токен и удаляем, если недействителен
                 val token = prefs.getString(KEY_TOKEN, null)
                 if (token != null && JwtUtils.isExpired(token, user.externalId)) {
@@ -88,7 +87,7 @@ class UserSessionManager(context: Context) {
      * Токен проверяется на валидность перед сохранением.
      */
     fun setUserAndToken(user: User, token: String?) {
-        _currentUser.value = user
+        currentUserInternal = user
         prefs.edit { putLong(KEY_USER_ID, user.id!!) }
         if (token != null && !JwtUtils.isExpired(token, user.externalId)) {
             prefs.edit { putString(KEY_TOKEN, token) }
@@ -114,7 +113,7 @@ class UserSessionManager(context: Context) {
      */
     fun getToken(): String? {
         val token = prefs.getString(KEY_TOKEN, null) ?: return null
-        return if (!JwtUtils.isExpired(token, _currentUser.value?.externalId)) {
+        return if (!JwtUtils.isExpired(token, currentUserInternal?.externalId)) {
             token
         } else {
             clearToken()
@@ -144,7 +143,7 @@ class UserSessionManager(context: Context) {
      * Полная очистка сессии (пользователь + токен).
      */
     fun logout() {
-        _currentUser.value = null
+        currentUserInternal = null
         prefs.edit { clear() }
     }
 
@@ -152,13 +151,31 @@ class UserSessionManager(context: Context) {
     fun getMergedUser(userData: UserCreate): User? {
         return dbHelper.getMergedUser(userData)
     }
+    fun getUserSettings(userId: Long? = null): UserSettings? {
+        if (userId == null) {
+            val currentUserId = currentUserInternal?.id ?: return null
+            return dbHelper.getOrCreateUserSettings(currentUserId)
+        }
+        return dbHelper.getOrCreateUserSettings(userId)
+    }
+    fun updateUserSettings(
+        userSettings: UserSettings,
+        syncMeetingsImmediately: Boolean,
+        syncNotesImmediately: Boolean
+    ): Boolean {
+        return dbHelper.updateUserSettings(
+            userSettingsId = userSettings.id,
+            syncMeetingsImmediately = syncMeetingsImmediately,
+            syncNotesImmediately = syncNotesImmediately
+        )
+    }
     fun updateSessionUser(userData: UserUpdate): User? {
         val userId = prefs.getLong(KEY_USER_ID, -1)
         if (userId != -1L) {
             val updated = dbHelper.updateUser(user = userData, userId = userId)
             if (updated > 0) {
                 val user = dbHelper.getUserById(userId)
-                _currentUser.value = user
+                currentUserInternal = user
                 return user
             }
         }
@@ -202,9 +219,9 @@ class UserSessionManager(context: Context) {
     }
 
     // ===== Методы для работы с заметками текущего пользователя =====
-    fun getNotes(): List<Note> {
-        val userId = _currentUser.value?.id ?: return emptyList()
-        return dbHelper.getNotesByUser(userId)
+    fun getNotes(filters: NodeFilters): List<Note> {
+        val userId = currentUserInternal?.id ?: return emptyList()
+        return dbHelper.getNotesByUser(userId = userId, filters = filters)
     }
 
     fun addNote(note: Note): Long {
@@ -215,8 +232,8 @@ class UserSessionManager(context: Context) {
         return dbHelper.updateNote(note)
     }
 
-    fun deleteNote(noteId: Long): Int {
-        return dbHelper.deleteNote(noteId)
+    fun deleteNote(noteId: Long, archive: Boolean): Int {
+        return dbHelper.deleteNote(id = noteId, archive = archive)
     }
 
     fun getNoteById(noteId: Long): Note? {
@@ -224,9 +241,9 @@ class UserSessionManager(context: Context) {
     }
 
     // ===== Методы для работы со встречами текущего пользователя =====
-    fun getMeetings(): List<Meeting> {
-        val userId = _currentUser.value?.id ?: return emptyList()
-        return dbHelper.getMeetingsByUser(userId)
+    fun getMeetings(filters: MeetingFilters): List<Meeting> {
+        val userId = currentUserInternal?.id ?: return emptyList()
+        return dbHelper.getMeetingsByUser(userId = userId, filters = filters)
     }
 
     fun addMeeting(meeting: Meeting): Long {
@@ -237,13 +254,13 @@ class UserSessionManager(context: Context) {
         return dbHelper.updateMeeting(meeting)
     }
 
-    fun deleteMeeting(meetingId: Long): Int {
-        return dbHelper.deleteMeeting(meetingId)
+    fun deleteMeeting(meetingId: Long, archive: Boolean): Int {
+        return dbHelper.deleteMeeting(id = meetingId, archive = archive)
     }
 
     fun getMeetingById(meetingId: Long): Meeting? {
         return dbHelper.getMeetingById(meetingId)
     }
 
-    fun getUser(): User? = _currentUser.value
+    fun getUser(): User? = currentUserInternal
 }

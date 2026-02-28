@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Прозрачность | HEX
+     5%           | 0D
+     10%          | 1A
+     20%          | 33
+     30%          | 4D
+     50%          | 80
+     95%          | F2
+-->
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="redColor">#F44336</color>
+    <color name="redColor_10">#1AF44336</color>
+    <color name="redColor_05">#0DF44336</color>
     <color name="redDarkColor">#92180C</color>
     <color name="yellowColor">#FFC107</color>
+    <color name="yellowColor_10">#1AFFC107</color>
+    <color name="yellowColor_05">#0DFFC107</color>
     <color name="greenColor">#4CAF50</color>
+    <color name="greenColor_10">#1A4CAF50</color>
+    <color name="greenColor_05">#0D4CAF50</color>
     <color name="lightLightGray">#EEEEEE</color>
     <color name="lightLightGrayBack">#E5E5E5</color>
     <color name="textColor">#222222</color>
+    <color name="textColor_10">#1A222222</color>
     <color name="textLight">#878787</color>
     <color name="disabledBTNColor">#808080</color>
     <color name="grayBackColor">#B0B0B0</color>

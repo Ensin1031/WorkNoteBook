@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_delete_by_view"
+        android:title="@string/delete" />
+
+    <item
+        android:id="@+id/action_recover_by_view"
+        android:title="@string/recover" />
+
+    <item
+        android:id="@+id/action_sync_by_view"
+        android:title="@string/Sync" />
+
+    <item
+        android:id="@+id/action_cancel_by_view"
+        android:title="@string/cancel" />
+
+</menu>

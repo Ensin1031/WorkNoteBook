@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:padding="20dp"
+    app:shapeAppearanceOverlay="@style/RoundedCardShape">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_edit_text_disabled"
+        android:padding="15dp"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_confirm_delete_archive"
+            android:text="@string/Archive"
+            android:minWidth="200dp"
+            android:background="@drawable/bg_button"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent" />
+
+        <Button
+            android:id="@+id/btn_confirm_delete_delete_permanently"
+            android:text="@string/DeletePermanently"
+            android:minWidth="200dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent" />
+
+        <Button
+            android:id="@+id/btn_confirm_delete_cancel"
+            android:text="@string/cancel"
+            android:minWidth="200dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_button"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

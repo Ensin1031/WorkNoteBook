@@ -48,4 +48,5 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.flexbox)
     implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.fragment.ktx)
 }

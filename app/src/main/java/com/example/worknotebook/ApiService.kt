@@ -8,6 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 import kotlin.jvm.java
 
 
@@ -64,6 +65,9 @@ interface ApiService {
     @GET(ApiRoutes.NOTES)
     suspend fun getNotes(): Response<Note>
 
+    @POST("${ApiRoutes.NOTES}sync/")
+    suspend fun syncNote(@Body request: Note): Response<Note>
+
     @POST(ApiRoutes.NOTES)
     suspend fun createNote(@Body request: Note): Response<Note>
 
@@ -71,7 +75,10 @@ interface ApiService {
     suspend fun updateNote(@Path("note_id") noteId: Int, @Body request: Note): Response<Note>
 
     @DELETE("${ApiRoutes.NOTES}{note_id}/")
-    suspend fun deleteNote(@Path("note_id") noteId: Int): Response<Unit>
+    suspend fun deleteNote(
+        @Path("note_id") noteId: Int,
+        @Query("archive") archive: Boolean = false
+    ): Response<Unit>
 
     // MEETINGS
     @GET("${ApiRoutes.MEETINGS}{meeting_id}/")

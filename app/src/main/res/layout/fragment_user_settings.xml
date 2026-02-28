@@ -639,11 +639,75 @@
                         android:fontFamily="@font/inter_bold"
                         android:textSize="18sp" />
 
-                    <!-- Блок с Login -->
+                    <!-- Блок с редактированием настройки синхронизации Встреч -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/syncMeetingsImmediatelyHint"
+                            android:textColor="@color/textColor"
+                            android:textSize="14sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/sw_user_settings_sync_meetings_immediately"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            app:trackTint="@color/switch_track_selector"
+                            app:thumbTint="@color/switch_thumb_selector" />
+                    </LinearLayout>
+
+                    <!-- Блок с редактированием настройки синхронизации Заметок -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/bg_edit_text_disabled"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="0dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:minWidth="120dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="14dp"
+                            android:text="@string/syncNotesImmediatelyHint"
+                            android:textColor="@color/textColor"
+                            android:textSize="14sp"
+                            tools:ignore="RtlSymmetry" />
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/sw_user_settings_sync_notes_immediately"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="15dp"
+                            app:trackTint="@color/switch_track_selector"
+                            app:thumbTint="@color/switch_thumb_selector" />
+                    </LinearLayout>
+
+                    <!-- Блок с Датой создания аккаунта -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="12dp"
                         android:minWidth="120dp"
                         android:paddingHorizontal="5dp"
                         android:paddingBottom="3dp"

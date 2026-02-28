@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    android:padding="20dp"
+    app:shapeAppearanceOverlay="@style/RoundedCardShape">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_edit_text_disabled"
+        android:paddingHorizontal="15dp"
+        android:paddingTop="15dp"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/rg_change_priority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_edit_text"
+            android:padding="8dp">
+
+            <RadioButton
+                android:id="@+id/rb_change_priority_high"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/high_priority"
+                android:background="@drawable/bg_edit_text"
+                android:button="@null"
+                android:drawablePadding="10dp"
+                android:paddingStart="20dp"
+                android:backgroundTint="@color/redColor"
+                android:textColor="@color/textColor"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"
+                tools:ignore="RtlSymmetry" />
+
+            <RadioButton
+                android:id="@+id/rb_change_priority_normal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/normal_priority"
+                android:background="@drawable/bg_edit_text"
+                android:button="@null"
+                android:drawablePadding="10dp"
+                android:paddingStart="20dp"
+                android:backgroundTint="@color/yellowColor"
+                android:textColor="@color/textColor"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="5dp"
+                tools:ignore="RtlSymmetry" />
+
+            <RadioButton
+                android:id="@+id/rb_change_priority_low"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/low_priority"
+                android:background="@drawable/bg_edit_text"
+                android:button="@null"
+                android:drawablePadding="10dp"
+                android:paddingStart="20dp"
+                android:backgroundTint="@color/greenColor"
+                android:textColor="@color/textColor"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                tools:ignore="RtlSymmetry" />
+
+        </RadioGroup>
+
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:id="@+id/btn_change_priority_cancel"
+                style="?android:attr/buttonBarNegativeButtonStyle"
+                android:text="@string/Cancel"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content" />
+
+            <Button
+                android:id="@+id/btn_change_priority_ok"
+                android:text="@string/set_priority"
+                android:layout_marginStart="12dp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

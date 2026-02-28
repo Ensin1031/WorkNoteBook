@@ -22,16 +22,18 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Locale
 
 
-private const val ARG_HAS_CONNECT = "hasBackConnect"
-
 class UserSettingsFragment : Fragment() {
+
+    private val sharedViewModel: MainSharedViewModel by activityViewModels()
 
     private lateinit var session: UserSessionManager
     private lateinit var logoutBTN: Button
@@ -88,6 +90,10 @@ class UserSettingsFragment : Fragment() {
     private lateinit var radioGenderFemale: RadioButton
     private lateinit var btnNewGenderSave: ImageButton
 
+    //UserSettings
+    private lateinit var switchSyncMeetingsImmediately: SwitchMaterial
+    private lateinit var switchSyncNotesImmediately: SwitchMaterial
+
     // Created
     private lateinit var inputCreated: TextView
 
@@ -97,30 +103,22 @@ class UserSettingsFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_user_settings, container, false)
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            hasConnection = it.getBoolean(ARG_HAS_CONNECT)
-        }
-    }
-
     companion object {
         @JvmStatic
-        fun newInstance(hasBackConnect: Boolean) =
-            UserSettingsFragment().apply {
-                arguments = Bundle().apply {
-                    putBoolean(ARG_HAS_CONNECT, hasBackConnect)
-                }
-            }
+        fun newInstance() = UserSettingsFragment()
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initViews(view = view)
-        initData()
+        viewLifecycleOwner.lifecycleScope.launch {
+            sharedViewModel.hasConnection.collect { isConnected ->
+                hasConnection = isConnected
+                initData()
+            }
+        }
     }
     private fun initViews (view: View) {
-        session = UserSessionManager(requireContext())
+        session = UserSessionManager.getInstance(requireContext())
         progressBar = requireActivity().findViewById(R.id.main_selection_page_header_progress_bar)
         logoutBTN = view.findViewById(R.id.btn_logout)
         // Verified
@@ -165,11 +163,14 @@ class UserSettingsFragment : Fragment() {
         radioGenderMale = view.findViewById(R.id.rb_user_settings_gender_edit_male)
         radioGenderFemale = view.findViewById(R.id.rb_user_settings_gender_edit_female)
         btnNewGenderSave = view.findViewById(R.id.btn_user_settings_gender_save)
+        // UserSettings
+        switchSyncMeetingsImmediately = view.findViewById(R.id.sw_user_settings_sync_meetings_immediately)
+        switchSyncNotesImmediately = view.findViewById(R.id.sw_user_settings_sync_notes_immediately)
         // Created
         inputCreated = view.findViewById(R.id.tv_user_settings_created)
     }
     @SuppressLint("ClickableViewAccessibility")
-    private fun initListeners(user: User) {
+    private fun initListeners(user: User, userSettings: UserSettings) {
         // Login
         btnEditLogin.setOnClickListener {
             btnEditLogin.visibility = View.GONE
@@ -260,7 +261,6 @@ class UserSettingsFragment : Fragment() {
             false
         }
         btnNewBirthdateSave.setOnClickListener {
-            Toast.makeText(requireContext(), "$selectedBirthdateDate", Toast.LENGTH_SHORT).show()
             when {
                 selectedBirthdateDate == null && user.birthdateAt == null -> {
                     // если старая дата отсутствует, и поле ввода пустое
@@ -323,6 +323,36 @@ class UserSettingsFragment : Fragment() {
         logoutBTN.setOnClickListener {
             logout()
         }
+
+        switchSyncMeetingsImmediately.setOnCheckedChangeListener { _, isChecked ->
+            applySetting(
+                userSettings = userSettings,
+                syncMeetingsImmediately = isChecked,
+                syncNotesImmediately = switchSyncNotesImmediately.isChecked
+            )
+        }
+        switchSyncNotesImmediately.setOnCheckedChangeListener { _, isChecked ->
+            applySetting(
+                userSettings = userSettings,
+                syncMeetingsImmediately = switchSyncMeetingsImmediately.isChecked,
+                syncNotesImmediately = isChecked
+            )
+        }
+    }
+    private fun applySetting(userSettings: UserSettings, syncMeetingsImmediately: Boolean, syncNotesImmediately: Boolean) {
+        switchSyncNotesImmediately.isEnabled = false
+        switchSyncMeetingsImmediately.isEnabled = false
+        if (session.updateUserSettings(
+                userSettings = userSettings,
+                syncMeetingsImmediately = syncMeetingsImmediately,
+                syncNotesImmediately = syncNotesImmediately
+        )) {
+            switchSyncNotesImmediately.isEnabled = true
+            switchSyncMeetingsImmediately.isEnabled = true
+        } else {
+            switchSyncNotesImmediately.isEnabled = true
+            switchSyncMeetingsImmediately.isEnabled = true
+        }
     }
     private fun logout() {
         session.logout()
@@ -369,7 +399,13 @@ class UserSettingsFragment : Fragment() {
                 GenderType.FEMALE -> radioGenderFemale.isChecked = true
             }
 
-            initListeners(user = user)
+            val userSettings = session.getUserSettings(user.id!!)!!
+            switchSyncMeetingsImmediately.setOnCheckedChangeListener(null)
+            switchSyncMeetingsImmediately.isChecked = userSettings.syncMeetingsImmediately
+            switchSyncNotesImmediately.setOnCheckedChangeListener(null)
+            switchSyncNotesImmediately.isChecked = userSettings.syncNotesImmediately
+
+            initListeners(user = user, userSettings = userSettings)
 
         } else {
             Toast.makeText(requireContext(), resources.getString(R.string.userIsNotLogged), Toast.LENGTH_SHORT).show()
