@@ -52,6 +52,12 @@ data class LoginRequest(
 )
 
 
+data class SyncSystem(
+    @SerializedName("meetings") val meetings: List<SyncMeeting>,
+    @SerializedName("notes") val notes: List<Note>
+)
+
+
 /** Дата-классы Пользователя */
 data class UserUpdate(
     @SerializedName("name") val name: String? = null,
@@ -270,6 +276,7 @@ data class NodeFilters(
     @SerializedName("by_sync_by_back_asc") var bySyncByBackAsc: Boolean = false,
     @SerializedName("view_only_sync_by_back") var viewOnlySyncByBack: Boolean = false,
     @SerializedName("view_only_not_sync_by_back") var viewOnlyNotSyncByBack: Boolean = false,
+    @SerializedName("only_without_parents") var onlyWithoutParents: Boolean = false,
     @SerializedName("search") var search: String = "",
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
@@ -288,6 +295,7 @@ data class NodeFilters(
         bySyncByBackAsc = parcel.readByte() != 0.toByte(),
         viewOnlySyncByBack = parcel.readByte() != 0.toByte(),
         viewOnlyNotSyncByBack = parcel.readByte() != 0.toByte(),
+        onlyWithoutParents = parcel.readByte() != 0.toByte(),
         search = parcel.readString() ?: ""
     )
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -306,6 +314,7 @@ data class NodeFilters(
         parcel.writeByte(if (bySyncByBackAsc) 1 else 0)
         parcel.writeByte(if (viewOnlySyncByBack) 1 else 0)
         parcel.writeByte(if (viewOnlyNotSyncByBack) 1 else 0)
+        parcel.writeByte(if (onlyWithoutParents) 1 else 0)
         parcel.writeString(search)
     }
     override fun describeContents(): Int = 0

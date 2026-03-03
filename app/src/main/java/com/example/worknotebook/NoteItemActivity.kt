@@ -687,35 +687,24 @@ class NoteItemActivity : AppCompatActivity() {
                 navigateToNotes()
             }
         }
-
-        if (syncNotesImmediately) {
-            lifecycleScope.launch {
-                try {
-                    if (archive) {
-                        // ситуация, когда отсутствует externalId - т.е. запись не сохранена на бэке.
-                        // Но по условиям выставленного флага syncNotesImmediately - его нужно сохранить.
-                        syncNote(andInArchive = true)
-                    } else if (currentNote!!.externalId == null) {
-                        // в этой ситуации - просто удалим локально полностью
-                        delEndLocal(id = noteId, isSync = false)
-                    } else {
-                        // пробуем удалить на бэке, и в любом случае удаляем локально
-                        val response = RetrofitClient.api.deleteNote(noteId = currentNote!!.externalId!!.toInt())
-                        val isSync: Boolean = response.isSuccessful
-                        delEndLocal(id = noteId, isSync = isSync)
-                    }
-                } catch (e: Exception) {
-                    AlertDialog.Builder(this@NoteItemActivity)
-                        .setMessage("${resources.getString(R.string.Error)}: $e")
-                        .setNegativeButton(resources.getString(R.string.Cancel)) { dialog, _ ->
-                            dialog.dismiss()
-                            endViewProcess()
-                        }
-                        .show()
+        lifecycleScope.launch {
+            try {
+                if (archive) {
+                    // ситуация, когда отсутствует externalId - т.е. запись не сохранена на бэке.
+                    // Но по условиям выставленного флага syncNotesImmediately - его нужно сохранить.
+                    syncNote(andInArchive = true)
+                } else if (currentNote!!.externalId == null) {
+                    // в этой ситуации - просто удалим локально полностью
+                    delEndLocal(id = noteId, isSync = false)
+                } else {
+                    // пробуем удалить на бэке, и в любом случае удаляем локально
+                    val response = RetrofitClient.api.deleteNote(noteId = currentNote!!.externalId!!.toInt())
+                    val isSync: Boolean = response.isSuccessful
+                    delEndLocal(id = noteId, isSync = isSync)
                 }
+            } catch (e: Exception) {
+                delEndLocal(id = noteId, isSync = false)
             }
-        } else {
-            delEndLocal(id = noteId, isSync = false)
         }
     }
     private fun saveNote(savedNote: Note) {
@@ -726,10 +715,10 @@ class NoteItemActivity : AppCompatActivity() {
         if (syncNotesImmediately) {
             lifecycleScope.launch {
                 try {
-                    val response = RetrofitClient.api.createNote(savedNote)
+                    var noteId = savedNote.id
+                    val response = RetrofitClient.api.syncNote(savedNote)
                     if (response.isSuccessful) {
                         val noteData = response.body()
-                        var noteId = savedNote.id
                         if (noteData != null) {
                             val note = Note(
                                 id = noteId,

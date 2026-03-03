@@ -58,6 +58,12 @@ interface ApiService {
         @Body request: UserUpdate
     ): Response<User>
 
+    @POST("${ApiRoutes.USERS}{user_id}/sync-data/")
+    suspend fun syncSystem(
+        @Path("user_id") userId: Int,
+        @Body request: SyncSystem
+    ): Response<SyncSystem>
+
     // NOTES
     @GET("${ApiRoutes.NOTES}{note_id}/")
     suspend fun getNote(@Path("note_id") noteId: Int): Response<Note>
