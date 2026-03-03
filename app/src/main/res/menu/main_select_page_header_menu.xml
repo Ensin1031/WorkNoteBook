@@ -6,7 +6,11 @@
         android:title="@string/checkConnect" />
 
     <item
-        android:id="@+id/sync_data_with_back"
-        android:title="@string/syncUserData" />
+        android:id="@+id/sync_nodes_with_back"
+        android:title="@string/syncNotes" />
+
+    <item
+        android:id="@+id/sync_meetings_with_back"
+        android:title="@string/syncMeetings" />
 
 </menu>

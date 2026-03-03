@@ -26,6 +26,7 @@
     <string name="Error">Error</string>
     <string name="errorNodeEmptySave">To save, fill in any of the fields</string>
     <string name="errorSaveNoChanged">There are no changes to save</string>
+    <string name="errorMeetingEndMoreStart">The end of the event must be later than the beginning</string>
     <string name="LoginSuccessful">Login is successful</string>
     <string name="LoginLocal">Login local</string>
     <string name="LoginUserNotFound">Invalid username or password</string>
@@ -43,7 +44,16 @@
     <string name="user_birthdate">Date of birth</string>
     <string name="AddUserBirthdate">Select the date of birth</string>
     <string name="AddNewUserBirthdate">Select the new date of birth</string>
+    <string name="AddDate">Select a date</string>
+    <string name="GoToDate">Go to date</string>
+    <string name="StartDate">Start date</string>
+    <string name="EndDate">End date</string>
+    <string name="AddTime">Select a time</string>
+    <string name="StartTime">Start time</string>
+    <string name="EndTime">End time</string>
+    <string name="NoMeetings">There are no scheduled events</string>
     <string name="user_gender">Gender</string>
+    <string name="MeetingNotes">Meeting notes</string>
     <string name="syncMeetingsImmediatelyHint">Synchronize meetings immediately when creating or editing</string>
     <string name="syncNotesImmediatelyHint">Synchronize notes immediately when creating or editing</string>
     <string name="groupByPriorityDescendingOrder">Sort by priority, descending order</string>
@@ -64,6 +74,7 @@
     <string name="FilterViewOnlySyncByBack">Filter, show only synchronized</string>
     <string name="FilterViewOnlyNotSyncByBack">Filter, show only non-synchronized</string>
     <string name="Search">Search</string>
+    <string name="ArchiveRecord">Archive record</string>
     <string name="SearchMustContain">Must contain</string>
     <string name="user_account_created">Account creation date</string>
     <string name="SuccessfulSaving">Successful saving</string>
@@ -80,6 +91,7 @@
     <string name="goToNext">Next</string>
     <string name="CreateNote">Create note</string>
     <string name="CreateMeeting">Create meeting</string>
+    <string name="ListIsEmpty">The list is empty</string>
     <string name="Profile">Profile</string>
     <string name="UserData">User data</string>
     <string name="Settings">Settings</string>
@@ -88,9 +100,15 @@
     <string name="retry">Retry</string>
     <string name="exit">Exit</string>
     <string name="note_title">Note title</string>
+    <string name="meeting_title">Meeting title</string>
+    <string name="meeting_location">Meeting location</string>
     <string name="note_content">Note content</string>
+    <string name="meeting_description">Meeting description</string>
     <string name="enter_note_title">Enter note title…</string>
+    <string name="enter_meeting_title">Enter meeting title…</string>
+    <string name="enter_meeting_location">Enter meeting location…</string>
     <string name="enter_note_content">Enter note content…</string>
+    <string name="enter_meeting_description">Enter meeting description…</string>
     <string name="Sync">Synchronize</string>
     <string name="delete">Delete</string>
     <string name="save">Save</string>
@@ -102,6 +120,8 @@
     <string name="filters">Filters</string>
     <string name="checkConnect">Check the connection to the server</string>
     <string name="syncUserData">Synchronize data</string>
+    <string name="syncNotes">Synchronize notes</string>
+    <string name="syncMeetings">Synchronize data</string>
     <string name="high_priority">Tall</string>
     <string name="normal_priority">Normal</string>
     <string name="low_priority">Low</string>

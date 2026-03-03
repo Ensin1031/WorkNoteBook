@@ -21,6 +21,9 @@ import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 
 class MainSharedViewModel : ViewModel() {
@@ -42,9 +45,7 @@ class MainSharedViewModel : ViewModel() {
     }
 
     private val _meetingFilters = MutableStateFlow(MeetingFilters(
-        byMeetingAtDesc = true,
-        byUpdatedAtDesc = true,
-        byActiveDesc = true,
+        viewOnlyActive = true,
     ))
     val meetingFilters: StateFlow<MeetingFilters> = _meetingFilters
     fun setMeetingFilters(filters: MeetingFilters) {
@@ -67,12 +68,16 @@ class MainSelectionActivity : AppCompatActivity() {
     private var currentNavItemId: Int = R.id.nav_notes
     private lateinit var backConnectBTN: ImageButton
 
+    private var currentDate: Long = LocalDate.now(ZoneId.systemDefault()).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
     companion object {
         private const val KEY_NAV_ITEM = "current_nav_item"
         private const val KEY_HAS_CONNECTION_STATE = "has_connection"
+        const val CURRENT_DATE = "current_date"
         const val OPEN_FRAGMENT = "open_fragment"
         const val FRAGMENT_NOTES = "fragment_notes"
         const val FRAGMENT_MEETINGS = "fragment_meetings"
+        const val FRAGMENT_CALENDAR = "fragment_calendar"
         const val FRAGMENT_USER_SETTINGS = "fragment_user_settings"
     }
     override fun onSaveInstanceState(outState: Bundle) {
@@ -94,6 +99,7 @@ class MainSelectionActivity : AppCompatActivity() {
         initData()
 
         val fragmentToOpen = intent.getStringExtra(OPEN_FRAGMENT)
+        currentDate = intent.getLongExtra(CURRENT_DATE, currentDate)
 
         // Установка начального фрагмента
         if (savedInstanceState != null) {
@@ -106,12 +112,13 @@ class MainSelectionActivity : AppCompatActivity() {
             currentNavItemId = when (fragmentToOpen) {
                 FRAGMENT_NOTES -> R.id.nav_notes
                 FRAGMENT_MEETINGS -> R.id.nav_meetings
+                FRAGMENT_CALENDAR -> R.id.nav_calendar
                 FRAGMENT_USER_SETTINGS -> R.id.nav_settings
                 else -> R.id.nav_notes
             }
             initHeaderSettingsMenu(navItemId = currentNavItemId)
             bottomNavigation.selectedItemId = currentNavItemId
-            loadFragment(NotesFragment.newInstance())
+            loadFragmentForId(currentNavItemId)
         }
 
         // Обработка нажатий на пункты меню
@@ -141,8 +148,8 @@ class MainSelectionActivity : AppCompatActivity() {
         initHeaderSettingsMenu(navItemId = itemId)
         val fragment = when (itemId) {
             R.id.nav_notes -> NotesFragment.newInstance()
-            R.id.nav_meetings -> MeetingsFragment.newInstance()
-            R.id.nav_profile -> MeetingsFragment.newInstance()
+            R.id.nav_meetings -> MeetingsFragment.newInstance(rootDate = currentDate)
+            R.id.nav_calendar -> CalendarFragment.newInstance()
             R.id.nav_settings -> UserSettingsFragment.newInstance()
             else -> null
         }
@@ -206,7 +213,24 @@ class MainSelectionActivity : AppCompatActivity() {
     }
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(this, view)
-        popup.menuInflater.inflate(R.menu.main_select_page_header_menu, popup.menu)
+        val menu = popup.menu
+        popup.menuInflater.inflate(R.menu.main_select_page_header_menu, menu)
+        when (currentNavItemId) {
+            R.id.nav_notes -> {
+                menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
+            }
+            R.id.nav_meetings -> {
+                menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
+            }
+            else -> {
+                menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
+                menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
+            }
+        }
+
+        // TODO Заглушил пункты меню. Убрать после реализации массовой синхронизации.
+        menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
+        menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
 
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -214,8 +238,12 @@ class MainSelectionActivity : AppCompatActivity() {
                     checkConnection()
                     true
                 }
-                R.id.sync_data_with_back -> {
-                    syncUserData()
+                R.id.sync_nodes_with_back -> {
+                    syncNodes()
+                    true
+                }
+                R.id.sync_meetings_with_back -> {
+                    syncMeetings()
                     true
                 }
                 else -> false
@@ -224,26 +252,15 @@ class MainSelectionActivity : AppCompatActivity() {
 
         popup.show()
     }
-    private fun syncUserData() {
-        val user = session.getUser()
-        if (user != null) {
-            showLoadingState()
-            lifecycleScope.launch {
-                try {
-                    // TODO реализовать функционал синхронизации данных. Пока, как заглушка - проверка коннекта
-                    val response = RetrofitClient.api.check()
-                    hasConnection = response.isSuccessful && response.body() == true
-                    progressBar.visibility = View.GONE
-                    initCheckConnectionData()
-                    sharedViewModel.setConnectionState(hasConnection)
-                } catch (e: Exception) {
-                    hasConnection = false
-                    progressBar.visibility = View.GONE
-                    initCheckConnectionData()
-                    sharedViewModel.setConnectionState(hasConnection)
-                }
-            }
-        }
+    private fun syncNodes() {
+        // TODO -> Запуск фонового процесса синхронизации Заметок пользователя.
+        //  Пока заглушка.
+        checkConnection()
+    }
+    private fun syncMeetings() {
+        // TODO -> Запуск фонового процесса синхронизации Встреч пользователя.
+        //  Пока заглушка.
+        checkConnection()
     }
     private fun initCheckConnectionData() {
         val user = session.getUser()

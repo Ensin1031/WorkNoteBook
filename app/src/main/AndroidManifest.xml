@@ -18,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WorkNoteBook">
         <activity
+            android:name=".MeetingItemActivity"
+            android:exported="false" />
+        <activity
             android:name=".RegistrationActivity"
             android:exported="false" />
         <activity

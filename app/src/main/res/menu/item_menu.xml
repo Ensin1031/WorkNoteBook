@@ -2,19 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_set_priority_by_update"
+        android:id="@+id/menu_item_action_set_priority"
         android:title="@string/set_priority" />
 
     <item
-        android:id="@+id/action_sync_by_update"
+        android:id="@+id/menu_item_action_sync"
         android:title="@string/Sync" />
 
     <item
-        android:id="@+id/action_delete_by_update"
+        android:id="@+id/menu_item_action_delete"
         android:title="@string/delete" />
 
     <item
-        android:id="@+id/action_cancel_by_update"
+        android:id="@+id/menu_item_action_recover"
+        android:title="@string/recover" />
+
+    <item
+        android:id="@+id/menu_item_action_cancel"
         android:title="@string/cancel" />
 
 </menu>

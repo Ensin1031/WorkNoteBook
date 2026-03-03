@@ -58,7 +58,7 @@ const val NOTE_TABLE = "notes"
 class DBHelper(
     context: Context,
     factory: SQLiteDatabase.CursorFactory? = null,
-) : SQLiteOpenHelper(context, "workbook.db", factory, 5) {
+) : SQLiteOpenHelper(context, "workbook.db", factory, 7) {
 
     override fun onCreate(db: SQLiteDatabase?) {
         Log.d("DB_DEBUG", "-----===== onCreate called =====-----")  // TODO нужен на этапе разработки. потом убрать.
@@ -100,13 +100,21 @@ class DBHelper(
                 external_id INTEGER DEFAULT NULL,
                 user_id INTEGER NOT NULL,
                 external_user_id INTEGER DEFAULT NULL,
+        
                 title TEXT,
                 description TEXT,
-                meeting_at INTEGER DEFAULT NULL,
                 location TEXT,
+                start_date INTEGER NOT NULL,
+                end_date INTEGER DEFAULT NULL,
+                start_time INTEGER NOT NULL,
+                end_time INTEGER DEFAULT NULL,
+        
                 created_at INTEGER DEFAULT NULL,
                 updated_at INTEGER DEFAULT NULL,
+        
                 is_active INTEGER DEFAULT 1,
+                is_sync INTEGER DEFAULT 0,
+        
                 FOREIGN KEY (user_id) REFERENCES $USER_TABLE(id) ON DELETE CASCADE
             )
         """.trimIndent())
@@ -122,12 +130,17 @@ class DBHelper(
                 external_parent_note_id INTEGER DEFAULT NULL,
                 meeting_id INTEGER DEFAULT NULL,
                 external_meeting_id INTEGER DEFAULT NULL,
+                
                 title TEXT,
                 content TEXT,
+                priority TEXT DEFAULT '${NotePriority.NORMAL.name}',
+                
                 created_at INTEGER DEFAULT NULL,
                 updated_at INTEGER DEFAULT NULL,
-                priority TEXT DEFAULT '${NotePriority.NORMAL.name}',
+                
                 is_active INTEGER DEFAULT 1,
+                is_sync INTEGER DEFAULT 0,
+                
                 FOREIGN KEY (user_id) REFERENCES $USER_TABLE(id) ON DELETE CASCADE,
                 FOREIGN KEY (parent_note_id) REFERENCES $NOTE_TABLE(id) ON DELETE SET NULL,
                 FOREIGN KEY (meeting_id) REFERENCES $MEETING_TABLE(id) ON DELETE SET NULL
@@ -182,11 +195,15 @@ class DBHelper(
             externalUserId = cursor.getLong(cursor.getColumnIndexOrThrow("external_user_id")),
             title = cursor.getString(cursor.getColumnIndexOrThrow("title")),
             description = cursor.getString(cursor.getColumnIndexOrThrow("description")),
-            meetingAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("meeting_at")),
+            startDate = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("start_date")),
+            endDate = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("end_date")),
+            startTime = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("start_time")),
+            endTime = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("end_time")),
             location = cursor.getString(cursor.getColumnIndexOrThrow("location")),
             createdAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("created_at")),
             updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at")),
             isActive = cursor.getInt(cursor.getColumnIndexOrThrow("is_active")) == 1,
+            isSync = cursor.getInt(cursor.getColumnIndexOrThrow("is_sync")) == 1,
         )
     }
 
@@ -205,7 +222,8 @@ class DBHelper(
             createdAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("created_at")),
             updatedAt = cursor.getLongOrNull(cursor.getColumnIndexOrThrow("updated_at")),
             isActive = cursor.getInt(cursor.getColumnIndexOrThrow("is_active")) == 1,
-            priority = NotePriority.fromString(cursor.getString(cursor.getColumnIndexOrThrow("priority")))
+            priority = NotePriority.fromString(cursor.getString(cursor.getColumnIndexOrThrow("priority"))),
+            isSync = cursor.getInt(cursor.getColumnIndexOrThrow("is_sync")) == 1,
         )
     }
 
@@ -513,6 +531,8 @@ class DBHelper(
             put("created_at", note.createdAt)
             put("updated_at", note.updatedAt)
             put("priority", note.priority.name)
+            put("is_active", note.isActive)
+            put("is_sync", note.isSync)
         }
         val db = writableDatabase
         val id = db.insert(NOTE_TABLE, null, values)
@@ -520,7 +540,7 @@ class DBHelper(
         return id
     }
 
-    fun getNotesByUser(userId: Long, filters: NodeFilters): List<Note> {
+    fun getNotesByUser(userId: Long, filters: NodeFilters, parentNoteId: Long? = null, meetingId: Long? = null): List<Note> {
         val notes = mutableListOf<Note>()
         val db = readableDatabase
 
@@ -530,6 +550,16 @@ class DBHelper(
         // Базовое условие фильтрации
         selectionParts.add("user_id = ?")
         selectionArgs.add(userId.toString())
+
+        if (parentNoteId != null) {
+            selectionParts.add("parent_note_id = ?")
+            selectionArgs.add(parentNoteId.toString())
+        }
+
+        if (meetingId != null) {
+            selectionParts.add("meeting_id = ?")
+            selectionArgs.add(meetingId.toString())
+        }
 
         // Фильтр по приоритету
         val priorityConditions = mutableListOf<String>()
@@ -560,13 +590,13 @@ class DBHelper(
             selectionParts.add("is_active = 0")
         }
 
-        // Фильтр по синхронизации (external_id). Случаи, когда активны оба фильтра или оба неактивны - отсекаем.
+        // Фильтр по синхронизации. Случаи, когда активны оба фильтра или оба неактивны - отсекаем.
         // По умолчанию считаем в этих случаях, что нужно показывать и те и те
         if (filters.viewOnlySyncByBack && !filters.viewOnlyNotSyncByBack) {
-            selectionParts.add("external_id IS NOT NULL")
+            selectionParts.add("is_sync = 1")
         }
         if (filters.viewOnlyNotSyncByBack && !filters.viewOnlySyncByBack) {
-            selectionParts.add("external_id IS NULL")
+            selectionParts.add("is_sync = 0")
         }
 
         // Построение ORDER BY
@@ -578,15 +608,14 @@ class DBHelper(
                 else -> {}
             }
             // По факту синхронизации с бэком
-            val syncPref = "CASE WHEN external_id IS NULL THEN 1 ELSE 0 END"
             when {
                 filters.bySyncByBackDesc -> {
                     if (isNotEmpty()) append(", ")
-                    append("$syncPref DESC")
+                    append("is_sync DESC")
                 }
                 filters.bySyncByBackAsc -> {
                     if (isNotEmpty()) append(", ")
-                    append("$syncPref ASC")
+                    append("is_sync ASC")
                 }
                 else -> {}
             }
@@ -665,6 +694,7 @@ class DBHelper(
             put("updated_at", note.updatedAt)
             put("priority", note.priority.name)
             put("is_active", note.isActive)
+            put("is_sync", note.isSync)
         }
         val db = writableDatabase
         val updated = db.update(NOTE_TABLE, values, "id = ?", arrayOf(note.id.toString()))
@@ -672,11 +702,14 @@ class DBHelper(
         return updated
     }
 
-    fun deleteNote(id: Long, archive: Boolean): Int {
+    fun deleteNote(id: Long, archive: Boolean, isSync: Boolean): Int {
         val db = writableDatabase
         var deleted: Int
         if (archive) {
-            val values = ContentValues().apply { put("is_active", 0) }
+            val values = ContentValues().apply {
+                put("is_active", 0)
+                put("is_sync", if (isSync) { 1 } else { 0 })
+            }
             deleted = db.update(NOTE_TABLE, values, "id = ?", arrayOf(id.toString()))
         } else {
             deleted = db.delete(NOTE_TABLE, "id = ?", arrayOf(id.toString()))
@@ -693,11 +726,15 @@ class DBHelper(
             put("external_id", meeting.externalId)
             put("title", meeting.title)
             put("description", meeting.description)
-            put("meeting_at", meeting.meetingAt)
+            put("start_date", meeting.startDate)
+            put("end_date", meeting.endDate)
+            put("start_time", meeting.startTime)
+            put("end_time", meeting.endTime)
             put("location", meeting.location)
             put("created_at", meeting.createdAt)
             put("updated_at", meeting.updatedAt)
             put("is_active", meeting.isActive)
+            put("is_sync", meeting.isSync)
         }
         val db = writableDatabase
         val id = db.insert(MEETING_TABLE, null, values)
@@ -713,13 +750,53 @@ class DBHelper(
             null,
             "user_id = ?",
             arrayOf(userId.toString()),
-            null, null, "meeting_at ASC"
+            null, null, "start_date ASC"
         )
         while (cursor.moveToNext()) {
             meetings.add(cursorToMeeting(cursor))
         }
         cursor.close()
         db.close()
+        return meetings
+    }
+
+    fun getMeetingsInDateRange(userId: Long, start: Long, end: Long, filters: MeetingFilters): List<Meeting> {
+        val db = readableDatabase
+
+        val selectionParts = mutableListOf("user_id = ? AND start_date BETWEEN ? AND ?")
+        val selectionArgs = mutableListOf(userId.toString(), start.toString(), end.toString())
+
+        // Фильтр, активна ли запись. Случаи, когда активны оба фильтра или оба неактивны - отсекаем.
+        // По умолчанию считаем в этих случаях, что нужно показывать и те и те
+        if (filters.viewOnlyActive && !filters.viewOnlyNotActive) {
+            selectionParts.add("is_active = 1")
+        } else if (filters.viewOnlyNotActive && !filters.viewOnlyActive) {
+            selectionParts.add("is_active = 0")
+        }
+
+        // Фильтр по синхронизации. Случаи, когда активны оба фильтра или оба неактивны - отсекаем.
+        // По умолчанию считаем в этих случаях, что нужно показывать и те и те
+        if (filters.viewOnlySyncByBack && !filters.viewOnlyNotSyncByBack) {
+            selectionParts.add("is_sync = 1")
+        }
+        if (filters.viewOnlyNotSyncByBack && !filters.viewOnlySyncByBack) {
+            selectionParts.add("is_sync = 0")
+        }
+
+        val cursor = db.query(
+            MEETING_TABLE,
+            null,
+            selectionParts.joinToString(" AND "),
+            selectionArgs.toTypedArray(),
+            null,
+            null,
+            "start_date ASC, start_time ASC"
+        )
+        val meetings = mutableListOf<Meeting>()
+        while (cursor.moveToNext()) {
+            meetings.add(cursorToMeeting(cursor))
+        }
+        cursor.close()
         return meetings
     }
 
@@ -745,11 +822,15 @@ class DBHelper(
             put("external_user_id", meeting.externalUserId)
             put("title", meeting.title)
             put("description", meeting.description)
-            put("meeting_at", meeting.meetingAt)
+            put("start_date", meeting.startDate)
+            put("end_date", meeting.endDate)
+            put("start_time", meeting.startTime)
+            put("end_time", meeting.endTime)
             put("location", meeting.location)
             put("created_at", meeting.createdAt)
             put("updated_at", meeting.updatedAt)
             put("is_active", meeting.isActive)
+            put("is_sync", meeting.isSync)
         }
         val db = writableDatabase
         val updated = db.update(MEETING_TABLE, values, "id = ?", arrayOf(meeting.id.toString()))
@@ -757,11 +838,14 @@ class DBHelper(
         return updated
     }
 
-    fun deleteMeeting(id: Long, archive: Boolean): Int {
+    fun deleteMeeting(id: Long, archive: Boolean, isSync: Boolean): Int {
         val db = writableDatabase
         var deleted: Int
         if (archive) {
-            val values = ContentValues().apply { put("is_active", 0) }
+            val values = ContentValues().apply {
+                put("is_active", 0)
+                put("is_sync", if (isSync) { 1 } else { 0 })
+            }
             deleted = db.update(MEETING_TABLE, values, "id = ?", arrayOf(id.toString()))
         } else {
             deleted = db.delete(MEETING_TABLE, "id = ?", arrayOf(id.toString()))
