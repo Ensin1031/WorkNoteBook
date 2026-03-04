@@ -9,6 +9,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
@@ -112,7 +113,7 @@ class MainSelectionActivity : AppCompatActivity() {
             currentNavItemId = when (fragmentToOpen) {
                 FRAGMENT_NOTES -> R.id.nav_notes
                 FRAGMENT_MEETINGS -> R.id.nav_meetings
-                FRAGMENT_CALENDAR -> R.id.nav_calendar
+//                FRAGMENT_CALENDAR -> R.id.nav_calendar  // TODO
                 FRAGMENT_USER_SETTINGS -> R.id.nav_settings
                 else -> R.id.nav_notes
             }
@@ -149,7 +150,7 @@ class MainSelectionActivity : AppCompatActivity() {
         val fragment = when (itemId) {
             R.id.nav_notes -> NotesFragment.newInstance()
             R.id.nav_meetings -> MeetingsFragment.newInstance(rootDate = currentDate)
-            R.id.nav_calendar -> CalendarFragment.newInstance()
+//            R.id.nav_calendar -> CalendarFragment.newInstance()  // TODO
             R.id.nav_settings -> UserSettingsFragment.newInstance()
             else -> null
         }
@@ -215,35 +216,27 @@ class MainSelectionActivity : AppCompatActivity() {
         val popup = PopupMenu(this, view)
         val menu = popup.menu
         popup.menuInflater.inflate(R.menu.main_select_page_header_menu, menu)
-        when (currentNavItemId) {
-            R.id.nav_notes -> {
-                menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
-            }
-            R.id.nav_meetings -> {
-                menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
-            }
-            else -> {
-                menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
-                menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
-            }
-        }
-
-        // TODO Заглушил пункты меню. Убрать после реализации массовой синхронизации.
-        menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
-        menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
-
+        // TODO пока оставляю. Скорее всего - в дальнейшем нужно будет делить под разные вкладки.
+//        when (currentNavItemId) {
+//            R.id.nav_notes -> {
+//                menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
+//            }
+//            R.id.nav_meetings -> {
+//                menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
+//            }
+//            else -> {
+//                menu.findItem(R.id.sync_meetings_with_back)?.isVisible = false
+//                menu.findItem(R.id.sync_nodes_with_back)?.isVisible = false
+//            }
+//        }
         popup.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.check_connect_with_back -> {
                     checkConnection()
                     true
                 }
-                R.id.sync_nodes_with_back -> {
-                    syncNodes()
-                    true
-                }
-                R.id.sync_meetings_with_back -> {
-                    syncMeetings()
+                R.id.sync_data_with_back -> {
+                    syncData()
                     true
                 }
                 else -> false
@@ -252,15 +245,96 @@ class MainSelectionActivity : AppCompatActivity() {
 
         popup.show()
     }
-    private fun syncNodes() {
-        // TODO -> Запуск фонового процесса синхронизации Заметок пользователя.
-        //  Пока заглушка.
-        checkConnection()
-    }
-    private fun syncMeetings() {
-        // TODO -> Запуск фонового процесса синхронизации Встреч пользователя.
-        //  Пока заглушка.
-        checkConnection()
+    private fun syncData() {
+        val userId = session.getUser()?.id
+        val userExternalId = session.getUser()?.externalId
+        if (userExternalId == null || userId == null) {
+            Toast.makeText(this, resources.getString(R.string.userIsNotLogged), Toast.LENGTH_SHORT).show()
+        } else {
+            showLoadingState()
+            lifecycleScope.launch {
+                try {
+                    val response = RetrofitClient.api.syncSystem(
+                        userId = userExternalId.toInt(),
+                        request = SyncSystem(
+                            meetings = session.getMeetings(filters = MeetingFilters()).map { meeting ->
+                                SyncMeeting(
+                                    meeting = meeting,
+                                    notes = session.getNotes(filters = NodeFilters(), meetingId = meeting.id)
+                                )
+                            },
+                            notes = session.getNotes(filters = NodeFilters(onlyWithoutParents = true)),
+                        )
+                    )
+                    if (response.isSuccessful) {
+                        val responseData = response.body()
+                        val syncMeetingsData = responseData?.meetings
+                        syncMeetingsData?.forEach { (syncMeeting, syncMeetingNotes) ->
+                            val savedMeeting = syncMeeting.copy(
+                                id = syncMeeting.kaId,
+                                userId = userId,
+                                externalUserId = userExternalId,
+                                isSync = true
+                            )
+                            var meetingId = savedMeeting.id
+                            val meetingExternalId = savedMeeting.externalId
+                            if (meetingId == null) {
+                                meetingId = session.addMeeting(meeting = savedMeeting)
+                            } else {
+                                session.updateMeeting(meeting = savedMeeting)
+                            }
+                            syncMeetingNotes?.forEach { note ->
+                                val syncNote = note.copy(
+                                    id = note.kaId,
+                                    userId = userId,
+                                    externalUserId = userExternalId,
+                                    parentNoteId = note.kaParentNoteId,
+                                    meetingId = meetingId,
+                                    externalMeetingId = meetingExternalId,
+                                    isSync = true
+                                )
+                                if (syncNote.id == null) {
+                                    session.addNote(note = syncNote)
+                                } else {
+                                    session.updateNote(note = syncNote)
+                                }
+                            }
+                        }
+                        val syncNotesData = responseData?.notes
+                        syncNotesData?.forEach { syncNote ->
+                            val syncNote = syncNote.copy(
+                                id = syncNote.kaId,
+                                userId = userId,
+                                externalUserId = userExternalId,
+                                parentNoteId = syncNote.kaParentNoteId,
+                                meetingId = syncNote.kaMeetingId,
+                                isSync = true
+                            )
+                            if (syncNote.id == null) {
+                                session.addNote(note = syncNote)
+                            } else {
+                                session.updateNote(note = syncNote)
+                            }
+                        }
+                        Toast.makeText(this@MainSelectionActivity, resources.getString(R.string.SuccessfulSaving), Toast.LENGTH_SHORT).show()
+                        sharedViewModel.setConnectionState(!hasConnection)
+                        sharedViewModel.setConnectionState(hasConnection)
+                        endLoadingState()
+                    } else {
+                        Toast.makeText(this@MainSelectionActivity, resources.getString(R.string.SaveError), Toast.LENGTH_SHORT).show()
+                        endLoadingState()
+                    }
+                } catch (e: Exception) {
+                    AlertDialog.Builder(this@MainSelectionActivity)
+                        .setMessage("${resources.getString(R.string.Error)}: $e")
+                        .setNegativeButton(resources.getString(R.string.Cancel)) { dialog, _ ->
+                            dialog.dismiss()
+                            endLoadingState()
+                        }
+                        .show()
+                }
+            }
+        }
     }
     private fun initCheckConnectionData() {
         val user = session.getUser()
@@ -282,6 +356,9 @@ class MainSelectionActivity : AppCompatActivity() {
     private fun showLoadingState() {
         progressBar.visibility = View.VISIBLE
     }
+    private fun endLoadingState() {
+        progressBar.visibility = View.GONE
+    }
     private fun logout() {
         Toast.makeText(this, resources.getString(R.string.userIsNotLogged), Toast.LENGTH_SHORT).show()
         session.logout()
@@ -295,12 +372,12 @@ class MainSelectionActivity : AppCompatActivity() {
             try {
                 val response = RetrofitClient.api.check()
                 hasConnection = response.isSuccessful && response.body() == true
-                progressBar.visibility = View.GONE
+                endLoadingState()
                 initCheckConnectionData()
                 sharedViewModel.setConnectionState(hasConnection)
             } catch (e: Exception) {
                 hasConnection = false
-                progressBar.visibility = View.GONE
+                endLoadingState()
                 initCheckConnectionData()
                 sharedViewModel.setConnectionState(hasConnection)
             }
@@ -313,7 +390,7 @@ class MainSelectionActivity : AppCompatActivity() {
             Toast.LENGTH_SHORT
         ).show()
         hasConnection = true
-        progressBar.visibility = View.GONE
+        endLoadingState()
         initData()
         sharedViewModel.setConnectionState(hasConnection)
     }
@@ -324,7 +401,7 @@ class MainSelectionActivity : AppCompatActivity() {
             Toast.LENGTH_SHORT
         ).show()
         hasConnection = false
-        progressBar.visibility = View.GONE
+        endLoadingState()
         initData()
         sharedViewModel.setConnectionState(hasConnection)
     }

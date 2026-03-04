@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-<item
-    android:id="@+id/nav_notes"
-    android:icon="@drawable/ic_notes"
-    android:title="@string/Notes" />
+    <item
+        android:id="@+id/nav_notes"
+        android:icon="@drawable/ic_notes"
+        android:title="@string/Notes" />
 
-<item
-    android:id="@+id/nav_meetings"
-    android:icon="@drawable/ic_meetings"
-    android:title="@string/Meetings" />
+    <item
+        android:id="@+id/nav_meetings"
+        android:icon="@drawable/ic_meetings"
+        android:title="@string/Meetings" />
 
-<item
-    android:id="@+id/nav_calendar"
-    android:icon="@drawable/ic_calendar"
-    android:title="Календарь" />
+<!--    <item-->  <!-- TODO пока заглушил -->
+<!--        android:id="@+id/nav_calendar"-->
+<!--        android:icon="@drawable/ic_calendar"-->
+<!--        android:title="Календарь" />-->
 
     <item
         android:id="@+id/nav_settings"

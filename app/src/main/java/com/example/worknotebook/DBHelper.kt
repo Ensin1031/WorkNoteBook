@@ -561,6 +561,11 @@ class DBHelper(
             selectionArgs.add(meetingId.toString())
         }
 
+        // Фильтр по наличию родительских связей
+        if (filters.onlyWithoutParents) {
+            selectionParts.add("parent_note_id IS NULL AND meeting_id IS NULL")
+        }
+
         // Фильтр по приоритету
         val priorityConditions = mutableListOf<String>()
         if (filters.byPriorityOnlyHigh) priorityConditions.add("priority = 'HIGH'")
