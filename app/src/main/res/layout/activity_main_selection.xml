@@ -105,6 +105,9 @@
         app:labelVisibilityMode="labeled"
         app:itemIconTint="@color/nav_item_color"
         app:itemTextColor="@color/nav_item_color"
+        android:paddingBottom="0dp"
+        android:clipToPadding="false"
+        android:fitsSystemWindows="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
