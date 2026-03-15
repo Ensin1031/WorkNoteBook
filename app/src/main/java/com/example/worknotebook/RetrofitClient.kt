@@ -12,7 +12,9 @@ import kotlin.jvm.java
 
 object RetrofitClient {
 
-    private const val BASE_URL = "http://10.0.2.2:5000/"  // TODO тестовый локальный. Поменять на боевом.
+    // TODO При разворачивании на проде - поменять.
+    private const val BASE_URL = "http://10.0.2.2:5000/"  // TODO тестовый локальный.
+//    private const val BASE_URL = "http://192.192.192.192:5000/"  // TODO тестовый локальный для разворачивания на телефоне в режиме разработчика. При необходимости поменять на свой.
 
     private val logger = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

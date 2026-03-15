@@ -92,7 +92,7 @@ class MainSelectionActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main_selection)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_selection_container)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(0,systemBars.top,0,0)
             insets
         }
 
